@@ -4,3 +4,6 @@ Release/
 *.VC.opendb
 *.suo
 *.sln.ecd
+debug/
+release/
+

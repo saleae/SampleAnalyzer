@@ -9,6 +9,15 @@ else:
     
 print("Running on " + platform.system())
 
+# since we are already importing platform let's just check the architecture
+arch = "-lAnalyzer"
+if(platform.system() == "Linux"):
+    if(platform.architecture()[0] == "64bit"):
+        print("Running on 64bit system!")
+        arch = "-lAnalyzer64"
+    else:
+        print("Running on 32bit system!")
+
 #make sure the release folder exists, and clean out any .o/.so file if there are any
 if not os.path.exists( "release" ):
     os.makedirs( "release" )
@@ -40,7 +49,7 @@ os.chdir( ".." )
 #specify the search paths/dependencies/options for gcc
 include_paths = [ "./AnalyzerSDK/include" ]
 link_paths = [ "./AnalyzerSDK/lib" ]
-link_dependencies = [ "-lAnalyzer" ] #refers to libAnalyzer.dylib or libAnalyzer.so
+link_dependencies = [ arch ] #refers to libAnalyzer.dylib or libAnalyzer.so
 
 debug_compile_flags = "-O0 -w -c -fpic -g"
 release_compile_flags = "-O3 -w -c -fpic"
