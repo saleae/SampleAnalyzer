@@ -38,7 +38,7 @@ U32 IEBusSimulationDataGenerator::GenerateSimulationData( U64 largest_sample_req
 
 void IEBusSimulationDataGenerator::CreateSerialByte()
 {
-	U32 samples_per_bit = mSimulationSampleRateHz / mSettings->mBitRate;
+	U32 samples_per_bit = mSimulationSampleRateHz;// / mSettings->mBitRate;
 
 	U8 byte = mSerialText[ mStringIndex ];
 	mStringIndex++;
