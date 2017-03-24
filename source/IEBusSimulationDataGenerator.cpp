@@ -1,19 +1,19 @@
-#include "SimpleSerialSimulationDataGenerator.h"
-#include "SimpleSerialAnalyzerSettings.h"
+#include "IEBusSimulationDataGenerator.h"
+#include "IEBusAnalyzerSettings.h"
 
 #include <AnalyzerHelpers.h>
 
-SimpleSerialSimulationDataGenerator::SimpleSerialSimulationDataGenerator()
+IEBusSimulationDataGenerator::IEBusSimulationDataGenerator()
 :	mSerialText( "My first analyzer, woo hoo!" ),
 	mStringIndex( 0 )
 {
 }
 
-SimpleSerialSimulationDataGenerator::~SimpleSerialSimulationDataGenerator()
+IEBusSimulationDataGenerator::~IEBusSimulationDataGenerator()
 {
 }
 
-void SimpleSerialSimulationDataGenerator::Initialize( U32 simulation_sample_rate, SimpleSerialAnalyzerSettings* settings )
+void IEBusSimulationDataGenerator::Initialize( U32 simulation_sample_rate, IEBusAnalyzerSettings* settings )
 {
 	mSimulationSampleRateHz = simulation_sample_rate;
 	mSettings = settings;
@@ -23,7 +23,7 @@ void SimpleSerialSimulationDataGenerator::Initialize( U32 simulation_sample_rate
 	mSerialSimulationData.SetInitialBitState( BIT_HIGH );
 }
 
-U32 SimpleSerialSimulationDataGenerator::GenerateSimulationData( U64 largest_sample_requested, U32 sample_rate, SimulationChannelDescriptor** simulation_channel )
+U32 IEBusSimulationDataGenerator::GenerateSimulationData( U64 largest_sample_requested, U32 sample_rate, SimulationChannelDescriptor** simulation_channel )
 {
 	U64 adjusted_largest_sample_requested = AnalyzerHelpers::AdjustSimulationTargetSample( largest_sample_requested, sample_rate, mSimulationSampleRateHz );
 
@@ -36,9 +36,9 @@ U32 SimpleSerialSimulationDataGenerator::GenerateSimulationData( U64 largest_sam
 	return 1;
 }
 
-void SimpleSerialSimulationDataGenerator::CreateSerialByte()
+void IEBusSimulationDataGenerator::CreateSerialByte()
 {
-	U32 samples_per_bit = mSimulationSampleRateHz / mSettings->mBitRate;
+	U32 samples_per_bit = mSimulationSampleRateHz;// / mSettings->mBitRate;
 
 	U8 byte = mSerialText[ mStringIndex ];
 	mStringIndex++;
