@@ -3,36 +3,36 @@
 
 
 IEBusAnalyzerSettings::IEBusAnalyzerSettings()
-:	mMasterChannel( UNDEFINED_CHANNEL ),
-	mSlaveChannel( UNDEFINED_CHANNEL ),
-	mStartBitWidth( 1700 )
+:	mInputChannel( UNDEFINED_CHANNEL ),
+	mStartBitWidth( 1700 ),
+	mBitWidth( 40 )
 {
-	mMasterChannel.reset( new AnalyzerSettingInterfaceChannel() );
-	mMasterChannel->SetTitleAndTooltip( "Master Channel", "Master Channel IEBus" );
-	mMasterChannel->SetChannel( mMasterChannel );
-
-	mSlaveChannel.reset( new AnalyzerSettingInterfaceChannel() );
-	mSlaveChannel->SetTitleAndTooltip( "Slave Channel", "Slave Channel IEBus" );
-	mSlaveChannel->SetChannel( mSlaveChannel );
+	mInputChannelInterface.reset( new AnalyzerSettingInterfaceChannel() );
+	mInputChannelInterface->SetTitleAndTooltip( "Receive Channel", "Slave Receive Channel" );
+	mInputChannelInterface->SetChannel( mInputChannel );
 
 	mStartBitWidthInterface.reset( new AnalyzerSettingInterfaceInteger() );
-	mStartBitWidthInterface->SetTitleAndTooltip( "Start Bit Width",  "Specify the start bit width for data transfer." );
+	mStartBitWidthInterface->SetTitleAndTooltip( "Start Bit Width (uS)",  "Specify the start bit width in uS" );
 	mStartBitWidthInterface->SetMax( 6000000 );
 	mStartBitWidthInterface->SetMin( 1 );
 	mStartBitWidthInterface->SetInteger( mStartBitWidth );
 
-	AddInterface( mMasterChannel.get() );
-	AddInterface( mSlaveChannel.get() );
-	AddInterface( mStartBitWidth.get() );
+	mBitWidthInterface.reset( new AnalyzerSettingInterfaceInteger() );
+	mBitWidthInterface->SetTitleAndTooltip( "Start Bit Width (uS)",  "Specify the bit width in uS" );
+	mBitWidthInterface->SetMax( 6000000 );
+	mBitWidthInterface->SetMin( 1 );
+	mBitWidthInterface->SetInteger( mBitWidth );
+
+	AddInterface( mInputChannelInterface.get() );
+	AddInterface( mStartBitWidthInterface.get() );
+	AddInterface( mBitWidthInterface.get() );
 
 	AddExportOption( 0, "Export as text/csv file" );
 	AddExportExtension( 0, "text", "txt" );
 	AddExportExtension( 0, "csv", "csv" );
 
 	ClearChannels();
-	// not sure if bool needs to be true based on AddChannel line 25 AnalyzerSettings.h
-	AddChannel( mMasterChannel, "Master Channel", false ); 
-	AddChannel( mSlaveChannel, "Slave Channel", false );
+	AddChannel( mInputChannel, "IEbus", false );
 }
 
 IEBusAnalyzerSettings::~IEBusAnalyzerSettings()
@@ -42,7 +42,7 @@ IEBusAnalyzerSettings::~IEBusAnalyzerSettings()
 bool IEBusAnalyzerSettings::SetSettingsFromInterfaces()
 {
 	mInputChannel = mInputChannelInterface->GetChannel();
-//	mBitRate = mBitRateInterface->GetInteger();
+	mStartBitWidth = mStartBitWidthInterface->GetInteger();
 
 	ClearChannels();
 	AddChannel( mInputChannel, "IEbus", true );
@@ -53,7 +53,7 @@ bool IEBusAnalyzerSettings::SetSettingsFromInterfaces()
 void IEBusAnalyzerSettings::UpdateInterfacesFromSettings()
 {
 	mInputChannelInterface->SetChannel( mInputChannel );
-//	mBitRateInterface->SetInteger( mBitRate );
+	mStartBitWidthInterface->SetInteger( mStartBitWidth );
 }
 
 void IEBusAnalyzerSettings::LoadSettings( const char* settings )
@@ -62,7 +62,7 @@ void IEBusAnalyzerSettings::LoadSettings( const char* settings )
 	text_archive.SetString( settings );
 
 	text_archive >> mInputChannel;
-//	text_archive >> mBitRate;
+	text_archive >> mStartBitWidth;
 
 	ClearChannels();
 	AddChannel( mInputChannel, "IEbus", true );
@@ -75,7 +75,7 @@ const char* IEBusAnalyzerSettings::SaveSettings()
 	SimpleArchive text_archive;
 
 	text_archive << mInputChannel;
-//	text_archive << mBitRate;
+	text_archive << mStartBitWidth;
 
 	return SetReturnString( text_archive.GetString() );
 }

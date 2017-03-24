@@ -16,17 +16,15 @@ public:
 	virtual const char* SaveSettings();
 
 	
-	// Master Channel
-	Channel mMasterChannel;
-	// Slave Channel
-	Channel mSlaveChannel;
-	// Start bit width "this is the width of the startbit of transfers"
+	Channel mInputChannel;
 	U32 mStartBitWidth;
+	U32 mBitWidth;
 
 protected:
-	std::auto_ptr< AnalyzerSettingInterfaceChannel >	mMasterChannelInterface;
-	std::auto_ptr< AnalyzerSettingInterfaceChannel >	mSlaveChannelInterface;
+	std::auto_ptr< AnalyzerSettingInterfaceChannel >	mInputChannelInterface;
 	std::auto_ptr< AnalyzerSettingInterfaceInteger >	mStartBitWidthInterface;
+	std::auto_ptr< AnalyzerSettingInterfaceInteger >	mBitWidthInterface;
+
 };
 
 #endif //IEBUS_ANALYZER_SETTINGS

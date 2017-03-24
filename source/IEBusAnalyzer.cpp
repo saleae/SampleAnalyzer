@@ -25,47 +25,66 @@ void IEBusAnalyzer::WorkerThread()
 
 	mSerial = GetAnalyzerChannelData( mSettings->mInputChannel );
 
+	double tolerance = mSettings->mStartBitWidth * .05;
+
+	// to hold the start of the start bit
+	U64 start_sample_number_start;
+	// to hold the finish of the start bit
+	U64 start_sample_number_finish;
+
 	if( mSerial->GetBitState() == BIT_LOW )
 		mSerial->AdvanceToNextEdge();
 
-	U32 samples_per_bit = mSampleRateHz / mSettings->mBitRate;
-	U32 samples_to_first_center_of_first_data_bit = U32( 1.5 * double( mSampleRateHz ) / double( mSettings->mBitRate ) );
-
 	for( ; ; )
 	{
-		U8 data = 0;
-		U8 mask = 1 << 7;
-		
-		mSerial->AdvanceToNextEdge(); //falling edge -- beginning of the start bit
+		// flag for starting bit
+		bool found_start = false;
+		start_sample_number_start = mSerial->GetSampleNumber();
 
-		U64 starting_sample = mSerial->GetSampleNumber();
+		// search for the starting bit
+		while(!found_start){
+			// go to edge of what might be the starting bit and get the sample number
+			mSerial->AdvanceToNextEdge();
+			start_sample_number_finish = mSerial->GetSampleNumber();
 
-		mSerial->Advance( samples_to_first_center_of_first_data_bit );
+			// measure the sample and normilize the units
+			U32 measure_width = (start_sample_number_finish - start_sample_number_start) * 2;
+			if (measure_width > 100000)
+				measure_width *= .01;
+			else
+				measure_width *= .001;
 
-		for( U32 i=0; i<8; i++ )
-		{
-			//let's put a dot exactly where we sample this bit:
-			mResults->AddMarker( mSerial->GetSampleNumber(), AnalyzerResults::Dot, mSettings->mInputChannel );
-
-			if( mSerial->GetBitState() == BIT_HIGH )
-				data |= mask;
-
-			mSerial->Advance( samples_per_bit );
-
-			mask = mask >> 1;
+			// check to see if we have a starting bit
+			// if so let us continue to collect data
+			// if not we will reset the starting position
+			if( ( measure_width ) > ( mSettings->mStartBitWidth - tolerance )
+				&& ( measure_width ) < ( mSettings->mStartBitWidth + tolerance ) ) 
+			{
+				found_start = true;
+				mResults->AddMarker( start_sample_number_start, AnalyzerResults::UpArrow, mSettings->mInputChannel );
+				mResults->AddMarker( start_sample_number_finish, AnalyzerResults::Square, mSettings->mInputChannel );
+			}
+			else
+			{
+				mSerial->AdvanceToNextEdge();
+				start_sample_number_start = mSerial->GetSampleNumber();
+			}
 		}
 
+		bool finised_transmission = false;
 
-		//we have a byte to save. 
 		Frame frame;
-		frame.mData1 = data;
+		frame.mData1 = 0;
 		frame.mFlags = 0;
-		frame.mStartingSampleInclusive = starting_sample;
+		frame.mStartingSampleInclusive = start_sample_number_start;
 		frame.mEndingSampleInclusive = mSerial->GetSampleNumber();
 
 		mResults->AddFrame( frame );
 		mResults->CommitResults();
 		ReportProgress( frame.mEndingSampleInclusive );
+
+		// move to next rising edge
+		mSerial->AdvanceToNextEdge();
 	}
 }
 
@@ -87,17 +106,17 @@ U32 IEBusAnalyzer::GenerateSimulationData( U64 minimum_sample_index, U32 device_
 
 U32 IEBusAnalyzer::GetMinimumSampleRateHz()
 {
-	return mSettings->mBitRate * 4;
+	return mSettings->mStartBitWidth * 4;
 }
 
 const char* IEBusAnalyzer::GetAnalyzerName() const
 {
-	return "IEbus";
+	return "IEbus by github.com/james-tate";
 }
 
 const char* GetAnalyzerName()
 {
-	return "IEbus";
+	return "IEbus by github.com/james-tate";
 }
 
 Analyzer* CreateAnalyzer()
