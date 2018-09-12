@@ -23,7 +23,7 @@ The four build combinations produce analyzer dll files in the following location
 ```
 
 Instructions to tell the Saleae Logic software where to find your new analyzer dll can be found here:
-[How to set the developer directory in the Saleae software to use third party or user created analyzers.](http://support.saleae.com/hc/en-us/articles/208667506)
+[How to set the developer directory in the Saleae software to use third party or user created analyzers.](https://support.saleae.com/faq/technical-faq/setting-up-developer-directory)
 
 Once you have set that directory and restarted the software, your new custom analyzer should appear in the list of analyzers you can add.
 
@@ -85,7 +85,7 @@ python build_analyzer.py
 
 That's it! To debug the analyzer, you need to first tell the Saleae Logic software where to find your newly compiled *.so file.
 
-[How to set the developer directory in the Saleae software to use third party or user created analyzers.](http://support.saleae.com/hc/en-us/articles/208667506)
+[How to set the developer directory in the Saleae software to use third party or user created analyzers.](https://support.saleae.com/faq/technical-faq/setting-up-developer-directory)
 
 The two variants of the newly compiled analyzer can be found here:
 
@@ -124,7 +124,7 @@ python build_analyzer.py
 
 That's it! To debug the analyzer, you need to first tell the Saleae Logic software where to find your newly compiled *.dylib file.
 
-[How to set the developer directory in the Saleae software to use third party or user created analyzers.](http://support.saleae.com/hc/en-us/articles/208667506)
+[How to set the developer directory in the Saleae software to use third party or user created analyzers.](https://support.saleae.com/faq/technical-faq/setting-up-developer-directory)
 
 ```
 debug/lib<Your Analyzer's Name>Analyzer.dylib
@@ -302,7 +302,7 @@ This section was written using the 1.1.32 Analyzer SDK, Xcode version 7.2.1, and
 
 ![18](./images/18_-_breakpoint_set.png)
 
-- Before proceeding, see this article with instructions to configure the software to load your new analyzer: https://trello.com/c/LEFlqhlL
+- Before proceeding, see this article with instructions to configure the software to load your new analyzer: https://support.saleae.com/faq/technical-faq/setting-up-developer-directory
 - Be sure to select the folder where the debug version of the custom analyzer is is saved.
 
 - Once the Saleae logic software has been configured, and has been closed, click run from Xcode.
