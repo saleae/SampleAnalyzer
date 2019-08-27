@@ -58,7 +58,8 @@ To build and and debug your custom analyzer using the 1.1.14 software, follow th
 Optionally you can change the debugger command in visual studio to point to the older Logic.exe binary. Then you will be able to start debugging simply by pressing run in Visual Studio.
 
 **Common issues on Windows**
-
+- The 'Options' button is missing. 
+    On Logic software version 1.1.18, the 'Options' button is hidden because of the Windows Aero theme. It is still clickable right below the (X) button. More information [here](https://support.saleae.com/faq/technical-faq/why-is-the-options-button-missing).
 - The software says "Unable to 'LoadLibrary' on dll ... is not a valid Win32 application"
     This is most likely because the analyzer was not built for the same platform architecture as the software running it. In almost all cases, this means the analyzer was compiled for 32 bit instead of 64 bit. Details to switch from 32 bit to 64 bit are included in the Analyzer SDK documentation on page 9. First, [add a x64 target to your project](https://msdn.microsoft.com/en-us/library/ms185328(v=vs.120).aspx). Then, edit the linker settings for the 64 bit configuration. Change the additional dependencies item from Analyzer.dll to Analyzer64.dll. 
     Note: Only the software versions 1.1.16 and later were built for 64 bit. Previous releases, including 1.1.15, were 32 bit only, which is why no 64 bit analyzer dll was provided.
