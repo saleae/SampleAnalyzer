@@ -4,3 +4,4 @@
 [submodule "LegacyAnalyzerSDK"]
 	path = LegacyAnalyzerSDK
 	url = https://github.com/saleae/AnalyzerSDK.git
+	branch = 1.1.14-legacy
