@@ -48,6 +48,8 @@ To build and and debug your custom analyzer using the 1.1.14 software, follow th
 - Select the platform "Win32"
 - Build the solution
 - Launch the 1.1.18 32-bit Logic software. If the analyzer directory is not already configured, set that to the `Visual Studio\Win32\Debug-Legacy-1.1.14` directory, and restart the software.
+note: Logic version 1.1.18 does not have an option to set the analyzer directory. Just copy the dll being debugged from the Visual Studio build directory to the version 1.1.18 Analyzer subdirectory.
+
 - The analyzer should now be visible in the list of analyzers you can add.
 - In visual studio, open the Debug Menu, and select "Attach to process..."
 - Locate Logic.exe in the list, select it, and click the Attach button.
