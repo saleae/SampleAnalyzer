@@ -34,7 +34,7 @@ void GameCubeControllerAnalyzer::WorkerThread() {
 
         while (!packet_done) {
             U8 byte = 0;
-            U8 pos = 0;
+            U8 mask = 1 << 7;
 
             U64 frame_start_sample = mGamecube->GetSampleNumber();
             for (U8 i = 0; i < 8; i++) {
@@ -44,12 +44,13 @@ void GameCubeControllerAnalyzer::WorkerThread() {
                 rising_edge_sample = mGamecube->GetSampleNumber();
                 U64 low_time = GetPulseWidthUs(falling_edge_sample, rising_edge_sample);
 
-                if (750000 <= low_time && low_time <= 1500000) {
+                if (0.75 <= low_time && low_time <= 1.5) {
                     // detected a 1
-                    byte |= 1 << pos++;
-                } else if (2750000 <= low_time && low_time <= 4000000) {
+                    byte |= mask;
+                    mask >>= 1;
+                } else if (2.75 <= low_time && low_time <= 4) {
                     // detected a 0
-                    pos++;
+                    mask >>= 1;
                 } else {
                     // the data got corrupted, abandon the packet
                     packet_done = true;
@@ -63,7 +64,7 @@ void GameCubeControllerAnalyzer::WorkerThread() {
                 U64 high_time = GetPulseWidthUs(rising_edge_sample, falling_edge_sample);
 
                 // the line is idle - packet complete
-                if (high_time > 5250000) {
+                if (high_time > 5.25) {
                     packet_done = true;
                     break;
                 }
@@ -71,7 +72,7 @@ void GameCubeControllerAnalyzer::WorkerThread() {
             U64 frame_end_sample = mGamecube->GetSampleNumber();
 
             // if a full byte was completed, commit it
-            if (!error && pos == 8) {
+            if (!error && mask == 0) {
                 Frame frame;
                 frame.mData1 = byte;
                 frame.mFlags = 0;
@@ -114,8 +115,8 @@ const char* GameCubeControllerAnalyzer::GetAnalyzerName() const {
     return "GameCube";
 }
 
-U64 GameCubeControllerAnalyzer::GetPulseWidthUs(U64 start_edge, U64 end_edge) {
-    return (end_edge - start_edge) * 1000000 / mSampleRateHz;
+double GameCubeControllerAnalyzer::GetPulseWidthUs(U64 start_edge, U64 end_edge) {
+    return (end_edge - start_edge) * 1000000.0 / mSampleRateHz;
 }
 
 const char* GetAnalyzerName() {

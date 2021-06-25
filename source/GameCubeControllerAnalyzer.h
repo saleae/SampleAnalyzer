@@ -37,7 +37,7 @@ class ANALYZER_EXPORT GameCubeControllerAnalyzer : public Analyzer2 {
     U32 mStartOfStopBitOffset;
     U32 mEndOfStopBitOffset;
 
-    U64 GetPulseWidthUs(U64 start_edge, U64 end_edge);
+    double GetPulseWidthUs(U64 start_edge, U64 end_edge);
 };
 
 extern "C" ANALYZER_EXPORT const char* __cdecl GetAnalyzerName();
