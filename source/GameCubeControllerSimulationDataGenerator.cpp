@@ -76,11 +76,13 @@ void GameCubeControllerSimulationDataGenerator::GenerateDelayLong() {
 }
 
 void GameCubeControllerSimulationDataGenerator::GenerateIdCmd() {
+    // cmd
     GenerateByte(0x00);
     GenerateStopBit();
 }
 
 void GameCubeControllerSimulationDataGenerator::GenerateIdResp() {
+    // controller info
     GenerateByte(0x09);
     GenerateByte(0x00);
     GenerateByte(0x20);
@@ -88,6 +90,7 @@ void GameCubeControllerSimulationDataGenerator::GenerateIdResp() {
 }
 
 void GameCubeControllerSimulationDataGenerator::GenerateOriginCmd() {
+    // cmd
     GenerateByte(0x41);
     GenerateStopBit();
 }
@@ -117,7 +120,9 @@ void GameCubeControllerSimulationDataGenerator::GenerateOriginResp() {
 }
 
 void GameCubeControllerSimulationDataGenerator::GeneratePollCmd() {
+    // cmd
     GenerateByte(0x40);
+    // args
     GenerateByte(0x03);
     GenerateByte(0x00);
     GenerateStopBit();
