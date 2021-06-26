@@ -21,9 +21,14 @@ void GameCubeControllerAnalyzerResults::GenerateBubbleText(
     ClearResultStrings();
     Frame frame = GetFrame(frame_index);
 
-    char number_str[128];
-    AnalyzerHelpers::GetNumberString(frame.mData1, display_base, 8, number_str, 128);
-    AddResultString(number_str);
+    if (frame.mFlags & DISPLAY_AS_ERROR_FLAG) {
+        // This is not really worth enabling unless you can change the color
+        // AddResultString("ERROR: Invalid frame");
+    } else {
+        char number_str[128];
+        AnalyzerHelpers::GetNumberString(frame.mData1, display_base, 8, number_str, 128);
+        AddResultString(number_str);
+    }
 }
 
 void GameCubeControllerAnalyzerResults::GenerateExportFile(
@@ -33,7 +38,7 @@ void GameCubeControllerAnalyzerResults::GenerateExportFile(
     U64 trigger_sample = mAnalyzer->GetTriggerSample();
     U32 sample_rate = mAnalyzer->GetSampleRate();
 
-    file_stream << "Time [s],Value" << std::endl;
+    file_stream << "Time [s], Value [0, 1]" << std::endl;
 
     U64 num_frames = GetNumFrames();
     for (U32 i = 0; i < num_frames; i++) {

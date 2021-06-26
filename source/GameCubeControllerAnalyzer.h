@@ -9,6 +9,14 @@
 class GameCubeControllerAnalyzerSettings;
 class ANALYZER_EXPORT GameCubeControllerAnalyzer : public Analyzer2 {
   public:
+    enum FrameType {
+        ID_CMD,
+        STATUS_CMD,
+        ORIGIN_CMD,
+        RECALIBRATE_CMD,
+        STATUS_LONG_CMD,
+    };
+
     GameCubeControllerAnalyzer();
     virtual ~GameCubeControllerAnalyzer();
 
@@ -25,6 +33,12 @@ class ANALYZER_EXPORT GameCubeControllerAnalyzer : public Analyzer2 {
     virtual bool NeedsRerun();
 
   protected: // vars
+    struct ByteDecodeStatus {
+        bool error = false;
+        bool idle = false;
+        U8 byte = 0x00;
+    };
+
     std::auto_ptr<GameCubeControllerAnalyzerSettings> mSettings;
     std::auto_ptr<GameCubeControllerAnalyzerResults> mResults;
     AnalyzerChannelData* mGamecube;
@@ -38,6 +52,7 @@ class ANALYZER_EXPORT GameCubeControllerAnalyzer : public Analyzer2 {
     U32 mEndOfStopBitOffset;
 
     U64 GetPulseWidthNs(U64 start_edge, U64 end_edge);
+    ByteDecodeStatus DecodeByte();
 };
 
 extern "C" ANALYZER_EXPORT const char* __cdecl GetAnalyzerName();

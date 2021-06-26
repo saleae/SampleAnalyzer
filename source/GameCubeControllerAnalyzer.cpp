@@ -28,64 +28,26 @@ void GameCubeControllerAnalyzer::WorkerThread() {
     if (mGamecube->GetBitState() == BIT_HIGH) mGamecube->AdvanceToNextEdge();
 
     for (;;) {
-        U64 falling_edge_sample, rising_edge_sample;
-        bool packet_done = false;
-        bool error = false;
+        ByteDecodeStatus result;
 
-        while (!packet_done) {
-            U8 byte = 0;
-            U8 mask = 1 << 7;
-
+        while (!result.idle) {
             U64 frame_start_sample = mGamecube->GetSampleNumber();
-            for (U8 i = 0; i < 8; i++) {
-                // compute low time
-                falling_edge_sample = mGamecube->GetSampleNumber();
-                mGamecube->AdvanceToNextEdge();
-                rising_edge_sample = mGamecube->GetSampleNumber();
-                U64 low_time = GetPulseWidthNs(falling_edge_sample, rising_edge_sample);
-
-                if (750 <= low_time && low_time <= 1500) {
-                    // detected a 1
-                    byte |= mask;
-                    mask >>= 1;
-                } else if (2750 <= low_time && low_time <= 4000) {
-                    // detected a 0
-                    mask >>= 1;
-                } else {
-                    // the data got corrupted, abandon the packet
-                    packet_done = true;
-                    error = true;
-                    break;
-                }
-
-                // compute high time
-                mGamecube->AdvanceToNextEdge();
-                falling_edge_sample = mGamecube->GetSampleNumber();
-                U64 high_time = GetPulseWidthNs(rising_edge_sample, falling_edge_sample);
-
-                // the line is idle - packet complete
-                if (high_time > 5250) {
-                    packet_done = true;
-                    break;
-                }
-            }
+            result = DecodeByte();
             U64 frame_end_sample = mGamecube->GetSampleNumber();
 
-            // if a full byte was completed, commit it
-            if (!error && mask == 0) {
-                Frame frame;
-                frame.mData1 = byte;
+            Frame frame;
+            frame.mStartingSampleInclusive = frame_start_sample;
+            frame.mEndingSampleInclusive = frame_end_sample;
+            if (!result.error) {
+                frame.mData1 = result.byte;
                 frame.mFlags = 0;
-                frame.mStartingSampleInclusive = frame_start_sample;
-                frame.mEndingSampleInclusive = frame_end_sample;
-                mResults->AddFrame(frame);
-                mResults->CommitResults();
+            } else {
+                frame.mFlags |= DISPLAY_AS_ERROR_FLAG;
             }
+            mResults->AddFrame(frame);
+            mResults->CommitResults();
             ReportProgress(frame_end_sample);
             CheckIfThreadShouldExit();
-        }
-        if (!error) {
-            // commit packet
         }
     }
 }
@@ -115,10 +77,6 @@ const char* GameCubeControllerAnalyzer::GetAnalyzerName() const {
     return "GameCube";
 }
 
-U64 GameCubeControllerAnalyzer::GetPulseWidthNs(U64 start_edge, U64 end_edge) {
-    return (end_edge - start_edge) * 1e9 / mSampleRateHz;
-}
-
 const char* GetAnalyzerName() {
     return "GameCube";
 }
@@ -129,4 +87,50 @@ Analyzer* CreateAnalyzer() {
 
 void DestroyAnalyzer(Analyzer* analyzer) {
     delete analyzer;
+}
+
+U64 GameCubeControllerAnalyzer::GetPulseWidthNs(U64 start_edge, U64 end_edge) {
+    return (end_edge - start_edge) * 1e9 / mSampleRateHz;
+}
+
+GameCubeControllerAnalyzer::ByteDecodeStatus GameCubeControllerAnalyzer::DecodeByte() {
+    ByteDecodeStatus status;
+    U64 falling_edge_sample, rising_edge_sample;
+
+    for (U8 bit = 0; bit < 8; bit++) {
+        // compute low time
+        falling_edge_sample = mGamecube->GetSampleNumber();
+        mGamecube->AdvanceToNextEdge();
+        rising_edge_sample = mGamecube->GetSampleNumber();
+        U64 low_time = GetPulseWidthNs(falling_edge_sample, rising_edge_sample);
+
+        if (750 <= low_time && low_time <= 1500) {
+            // detected a 1
+            status.byte |= 1 << (7 - bit);
+        } else if (2750 <= low_time && low_time <= 4000) {
+            // detected a 0
+        } else {
+            // data is corrupt
+            status.error = true;
+            mGamecube->AdvanceToNextEdge();
+            break;
+        }
+
+        // compute high time
+        mGamecube->AdvanceToNextEdge();
+        falling_edge_sample = mGamecube->GetSampleNumber();
+        U64 high_time = GetPulseWidthNs(rising_edge_sample, falling_edge_sample);
+
+        // the line is idle - packet complete
+        if (high_time > 5250) {
+            if (status.byte != 0x01 || bit > 0) {
+                // not a stop bit
+                status.error = true;
+            }
+            status.idle = true;
+            break;
+        }
+    }
+
+    return status;
 }
