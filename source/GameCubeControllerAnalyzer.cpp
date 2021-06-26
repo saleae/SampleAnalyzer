@@ -42,13 +42,13 @@ void GameCubeControllerAnalyzer::WorkerThread() {
                 falling_edge_sample = mGamecube->GetSampleNumber();
                 mGamecube->AdvanceToNextEdge();
                 rising_edge_sample = mGamecube->GetSampleNumber();
-                U64 low_time = GetPulseWidthUs(falling_edge_sample, rising_edge_sample);
+                U64 low_time = GetPulseWidthNs(falling_edge_sample, rising_edge_sample);
 
-                if (0.75 <= low_time && low_time <= 1.5) {
+                if (750 <= low_time && low_time <= 1500) {
                     // detected a 1
                     byte |= mask;
                     mask >>= 1;
-                } else if (2.75 <= low_time && low_time <= 4) {
+                } else if (2750 <= low_time && low_time <= 4000) {
                     // detected a 0
                     mask >>= 1;
                 } else {
@@ -61,10 +61,10 @@ void GameCubeControllerAnalyzer::WorkerThread() {
                 // compute high time
                 mGamecube->AdvanceToNextEdge();
                 falling_edge_sample = mGamecube->GetSampleNumber();
-                U64 high_time = GetPulseWidthUs(rising_edge_sample, falling_edge_sample);
+                U64 high_time = GetPulseWidthNs(rising_edge_sample, falling_edge_sample);
 
                 // the line is idle - packet complete
-                if (high_time > 5.25) {
+                if (high_time > 5250) {
                     packet_done = true;
                     break;
                 }
@@ -115,8 +115,8 @@ const char* GameCubeControllerAnalyzer::GetAnalyzerName() const {
     return "GameCube";
 }
 
-double GameCubeControllerAnalyzer::GetPulseWidthUs(U64 start_edge, U64 end_edge) {
-    return (end_edge - start_edge) * 1000000.0 / mSampleRateHz;
+U64 GameCubeControllerAnalyzer::GetPulseWidthNs(U64 start_edge, U64 end_edge) {
+    return (end_edge - start_edge) * 1e9 / mSampleRateHz;
 }
 
 const char* GetAnalyzerName() {
