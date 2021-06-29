@@ -31,6 +31,7 @@ void GameCubeControllerAnalyzer::WorkerThread() {
     while (true) {
         bool idle = false;
         bool error = false;
+        U64 error_frame_start_sample, error_frame_end_sample;
         U64 last_processed_sample;
         std::vector<Frame> packet;
 
@@ -48,19 +49,26 @@ void GameCubeControllerAnalyzer::WorkerThread() {
             frame.mType = DATA;
 
             if (result.error) {
+                if (!error) {
+                    error_frame_start_sample = frame_start_sample;
+                }
                 error = true;
             }
             if (result.idle) {
+                if (error) {
+                    error_frame_end_sample = frame_start_sample;
+                }
                 idle = true;
             }
 
-            if (error) {
+            if (!idle && !error) {
+                packet.push_back(frame);
+            } else if (idle && error) {
+                frame.mStartingSampleInclusive = error_frame_start_sample;
+                frame.mEndingSampleInclusive = error_frame_end_sample;
                 frame.mData1 = 0;
                 frame.mFlags |= DISPLAY_AS_ERROR_FLAG;
                 frame.mType = ERROR;
-            }
-            if (!idle) {
-                // don't add the stop bit as a frame
                 packet.push_back(frame);
             }
 
