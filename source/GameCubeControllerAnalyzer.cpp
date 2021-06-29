@@ -3,6 +3,7 @@
 #include "GameCubeControllerAnalyzerSettings.h"
 
 #include <AnalyzerChannelData.h>
+#include <vector>
 
 GameCubeControllerAnalyzer::GameCubeControllerAnalyzer() :
     Analyzer2(), mSettings(new GameCubeControllerAnalyzerSettings()), mSimulationInitilized(false) {
@@ -27,28 +28,63 @@ void GameCubeControllerAnalyzer::WorkerThread() {
     // start at the first falling edge
     if (mGamecube->GetBitState() == BIT_HIGH) mGamecube->AdvanceToNextEdge();
 
-    for (;;) {
-        ByteDecodeStatus result;
+    while (true) {
+        bool idle = false;
+        bool error = false;
+        U64 last_processed_sample;
+        std::vector<Frame> packet;
 
-        while (!result.idle) {
+        // construct packet
+        while (!idle) {
             U64 frame_start_sample = mGamecube->GetSampleNumber();
-            result = DecodeByte();
+            ByteDecodeStatus result = DecodeByte();
             U64 frame_end_sample = mGamecube->GetSampleNumber();
 
             Frame frame;
             frame.mStartingSampleInclusive = frame_start_sample;
             frame.mEndingSampleInclusive = frame_end_sample;
-            if (!result.error) {
-                frame.mData1 = result.byte;
-                frame.mFlags = 0;
-            } else {
-                frame.mFlags |= DISPLAY_AS_ERROR_FLAG;
+            frame.mData1 = result.byte;
+            frame.mFlags = 0;
+            frame.mType = DATA;
+
+            if (result.error) {
+                error = true;
             }
+            if (result.idle) {
+                idle = true;
+            }
+
+            if (error) {
+                frame.mData1 = 0;
+                frame.mFlags |= DISPLAY_AS_ERROR_FLAG;
+                frame.mType = ERROR;
+            }
+            if (!idle) {
+                // don't add the stop bit as a frame
+                packet.push_back(frame);
+            }
+
+            last_processed_sample = frame_end_sample;
+        }
+
+        // process packet
+        if (!error) {
+            DecodePacket(packet);
+        }
+
+        // commit
+        for (Frame& frame : packet) {
             mResults->AddFrame(frame);
             mResults->CommitResults();
-            ReportProgress(frame_end_sample);
-            CheckIfThreadShouldExit();
         }
+        if (!error) {
+            mResults->CommitPacketAndStartNewPacket();
+        } else {
+            mResults->CancelPacketAndStartNewPacket();
+        }
+
+        ReportProgress(last_processed_sample);
+        CheckIfThreadShouldExit();
     }
 }
 
@@ -95,11 +131,11 @@ U64 GameCubeControllerAnalyzer::GetPulseWidthNs(U64 start_edge, U64 end_edge) {
 
 GameCubeControllerAnalyzer::ByteDecodeStatus GameCubeControllerAnalyzer::DecodeByte() {
     ByteDecodeStatus status;
-    U64 falling_edge_sample, rising_edge_sample;
+    U64 starting_sample, ending_sample, falling_edge_sample, rising_edge_sample;
 
     for (U8 bit = 0; bit < 8; bit++) {
         // compute low time
-        falling_edge_sample = mGamecube->GetSampleNumber();
+        starting_sample = falling_edge_sample = mGamecube->GetSampleNumber();
         mGamecube->AdvanceToNextEdge();
         rising_edge_sample = mGamecube->GetSampleNumber();
         U64 low_time = GetPulseWidthNs(falling_edge_sample, rising_edge_sample);
@@ -118,19 +154,45 @@ GameCubeControllerAnalyzer::ByteDecodeStatus GameCubeControllerAnalyzer::DecodeB
 
         // compute high time
         mGamecube->AdvanceToNextEdge();
-        falling_edge_sample = mGamecube->GetSampleNumber();
+        ending_sample = falling_edge_sample = mGamecube->GetSampleNumber();
         U64 high_time = GetPulseWidthNs(rising_edge_sample, falling_edge_sample);
 
         // the line is idle - packet complete
-        if (high_time > 5250) {
-            if (status.byte != 0x01 || bit > 0) {
+        if (high_time > 4000) {
+            if (status.byte != 0x80 || bit != 0) {
                 // not a stop bit
                 status.error = true;
             }
             status.idle = true;
             break;
+        } else {
+            U64 middle_sample = (starting_sample + ending_sample) / 2;
+            mResults->AddMarker(middle_sample, AnalyzerResults::Dot, mSettings->mInputChannel);
         }
     }
 
     return status;
+}
+
+void GameCubeControllerAnalyzer::DecodePacket(std::vector<Frame>& packet) {
+    if (!packet.size()) return;
+
+    U64 cmd = packet[0].mData1;
+    U64 len = packet.size();
+
+    if (len == 1) {
+        if (cmd == 0x00) {
+            packet[0].mType = CMD_ID;
+        } else if (cmd == 0x41) {
+            packet[0].mType = CMD_ORIGIN;
+        }
+    } else if (len == 3) {
+        if (cmd == 0x40) {
+            packet[0].mType = CMD_STATUS;
+        } else if (cmd == 0x42) {
+            packet[0].mType = CMD_RECALIBRATE;
+        } else if (cmd == 0x43) {
+            packet[0].mType = CMD_STATUS_LONG;
+        }
+    }
 }

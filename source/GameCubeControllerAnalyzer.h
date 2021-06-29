@@ -10,11 +10,13 @@ class GameCubeControllerAnalyzerSettings;
 class ANALYZER_EXPORT GameCubeControllerAnalyzer : public Analyzer2 {
   public:
     enum FrameType {
-        ID_CMD,
-        STATUS_CMD,
-        ORIGIN_CMD,
-        RECALIBRATE_CMD,
-        STATUS_LONG_CMD,
+        DATA,
+        CMD_ID,
+        CMD_STATUS,
+        CMD_ORIGIN,
+        CMD_RECALIBRATE,
+        CMD_STATUS_LONG,
+        ERROR,
     };
 
     GameCubeControllerAnalyzer();
@@ -46,13 +48,13 @@ class ANALYZER_EXPORT GameCubeControllerAnalyzer : public Analyzer2 {
     GameCubeControllerSimulationDataGenerator mSimulationDataGenerator;
     bool mSimulationInitilized;
 
-    // Serial analysis vars:
     U32 mSampleRateHz;
     U32 mStartOfStopBitOffset;
     U32 mEndOfStopBitOffset;
 
     U64 GetPulseWidthNs(U64 start_edge, U64 end_edge);
     ByteDecodeStatus DecodeByte();
+    void DecodePacket(std::vector<Frame>& packet);
 };
 
 extern "C" ANALYZER_EXPORT const char* __cdecl GetAnalyzerName();

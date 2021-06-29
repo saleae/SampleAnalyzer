@@ -21,13 +21,40 @@ void GameCubeControllerAnalyzerResults::GenerateBubbleText(
     ClearResultStrings();
     Frame frame = GetFrame(frame_index);
 
-    if (frame.mFlags & DISPLAY_AS_ERROR_FLAG) {
-        // This is not really worth enabling unless you can change the color
-        // AddResultString("ERROR: Invalid frame");
-    } else {
+    bool error = frame.mFlags & DISPLAY_AS_ERROR_FLAG;
+
+    if (!error) {
         char number_str[128];
         AnalyzerHelpers::GetNumberString(frame.mData1, display_base, 8, number_str, 128);
-        AddResultString(number_str);
+
+        switch (frame.mType) {
+            case GameCubeControllerAnalyzer::CMD_ID:
+                AddResultString("ID: ", number_str);
+                break;
+
+            case GameCubeControllerAnalyzer::CMD_STATUS:
+                AddResultString("Status: ", number_str);
+                break;
+
+            case GameCubeControllerAnalyzer::CMD_ORIGIN:
+                AddResultString("Origin: ", number_str);
+                break;
+
+            case GameCubeControllerAnalyzer::CMD_RECALIBRATE:
+                AddResultString("Recalibrate: ", number_str);
+                break;
+
+            case GameCubeControllerAnalyzer::CMD_STATUS_LONG:
+                AddResultString("Status Long: ", number_str);
+                break;
+
+            default:
+                AddResultString(number_str);
+                break;
+        }
+    } else {
+        // This is not really worth enabling unless you can change the color
+        AddResultString("ERROR: Invalid frame");
     }
 }
 
