@@ -2,3 +2,5 @@
 GameCube controller analyzer for Saleae Logic software.
 
 To build: `python build_analyzer.py`
+
+![GameCube Controller Analyzer](/analyzer.png)
