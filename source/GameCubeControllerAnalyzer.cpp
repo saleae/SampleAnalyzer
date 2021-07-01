@@ -148,13 +148,12 @@ GameCubeControllerAnalyzer::ByteDecodeStatus GameCubeControllerAnalyzer::DecodeB
         rising_edge_sample = mGamecube->GetSampleNumber();
         U64 low_time = GetPulseWidthNs(falling_edge_sample, rising_edge_sample);
 
-        if (750 <= low_time && low_time <= 1500) {
+        if (low_time < 2000) {
             // detected a 1
             status.byte |= 1 << (7 - bit);
-        } else if (2750 <= low_time && low_time <= 4000) {
-            // detected a 0
-        } else {
-            // data is corrupt
+            // if a 0 is detected, do nothing
+        } else if (low_time >= 5000) {
+            // neither a 1 nor 0 detected, data is corrupt
             status.error = true;
             mGamecube->AdvanceToNextEdge();
             break;
