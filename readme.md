@@ -1,16 +1,11 @@
 # Saleae Analyzer SDK Sample Analyzer
 The Saleae Analyzer SDK is used to create custom plugins for the Saleae Logic software. These plugins are used to decode protocol data from captured waveforms.
 
-The libraries required to build a custom analyzer are stored in another git repository, located here:
-[https://github.com/saleae/AnalyzerSDK](https://github.com/saleae/AnalyzerSDK)
+To build your own protocol decoder plugin, first fork, clone, or download this repository.
 
-This repository should be used to create new analyzers for the Saleae software.
+Then, make sure you have the required software installed for development. See the [Prerequisites](#-Prerequisites) section below for details.
 
-First, fork, clone or download this repository. Forking is recommended if you plan to use version control or share your custom analyzer publicly.
-
-Note - This repository contains a submodule. Be sure to include submodules when cloning, for example `git clone --recursive https://github.com/saleae/SampleAnalyzer.git`. If you download the repository from Github, the submodules are not included. In that case you will also need to download the AnalyzerSDK repository linked above and place the AnalyzerSDK folder inside of the SampleAnalyzer folder.
-
-*Note: an additional submodule is used for debugging on Windows, see section on Windows debugging for more information.*
+## Renaming your Analyzer
 
 Once downloaded, first run the script rename_analyzer.py. This script is used to rename the sample analyzer automatically. Specifically, it changes the class names in the source code, it changes the text name that will be displayed once the custom analyzer has been loaded into the Saleae Logic software, and it updates the visual studio project.
 
@@ -27,12 +22,89 @@ After that, the script will complete the renaming process and exit.
     SPI
     Mark's SPI Analyzer
 
-To build on Windows, open the visual studio project in the Visual Studio folder, and build. The Visual Studio solution has configurations for 32 bit and 64 bit builds. You will likely need to switch the configuration to 64 bit and build that in order to get the analyzer to load in the Windows software.
+Once renamed, you're ready to build your analyzer! See the [Building your Analyzer](##-Building-your-Analyzer) section below.
 
-To build on Linux or OSX, run the build_analyzer.py script. The compiled libraries can be found in the newly created debug and release folders.
+## Prerequisites
 
-	python build_analyzer.py
+### Windows
 
-To debug on Windows, please first review the section titled `Debugging an Analyzer with Visual Studio` in the included `doc/Analyzer SDK Setup.md` document.
+Dependencies:
+- Visual Studio 2017 (or newer) with C++
+- CMake 3.13+
 
-Unfortunately, debugging is limited on Windows to using an older copy of the Saleae Logic software that does not support the latest hardware devices. Details are included in the above document.
+**Visual Studio 2017**
+
+*Note - newer versions of Visual Studio should be fine.*
+
+Setup options:
+- Programming Languages > Visual C++ > select all sub-components.
+
+Note - if CMake has any problems with the MSVC compiler, it's likely a component is missing.
+
+**CMake**
+
+Download and install the latest CMake release here.
+https://cmake.org/download/
+
+### MacOS
+
+Dependencies:
+- XCode with command line tools
+- CMake 3.13+
+
+Installing command line tools after XCode is installed:
+```
+xcode-select --install
+```
+
+Then open XCode, open Preferences from the main menu, go to locations, and select the only option under 'Command line tools'.
+
+Installing CMake on MacOS:
+
+1. Download the binary distribution for MacOS, `cmake-*-Darwin-x86_64.dmg`
+2. Install the usual way by dragging into applications.
+3. Open a terminal and run the following:
+```
+/Applications/CMake.app/Contents/bin/cmake-gui --install
+```
+*Note: Errors may occur if older versions of CMake are installed.*
+### Linux
+
+Dependencies:
+- CMake 3.13+
+- gcc 5+
+
+Misc dependencies:
+
+```
+sudo apt-get install build-essential
+```
+## Building your Analyzer
+
+### Windows
+
+```bat
+mkdir build
+cd build
+cmake .. -A x64
+cmake --build .
+:: built analyzer will be located at SampleAnalyzer\build\Analyzers\Debug\SimpleSerialAnalyzer.dll
+```
+
+### MacOS
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+### Linux
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```

@@ -1,8 +1,1 @@
-Debug/
-Release/
-Debug-Legacy-1.1.14/
-*.VC.db
-*.VC.opendb
-*.suo
-*.sln.ecd
-*.vcxproj.user
+/build
