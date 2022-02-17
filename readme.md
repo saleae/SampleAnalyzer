@@ -3,7 +3,7 @@ The Saleae Analyzer SDK is used to create custom plugins for the Saleae Logic so
 
 To build your own protocol decoder plugin, first fork, clone, or download this repository.
 
-Then, make sure you have the required software installed for development. See the [Prerequisites](#-Prerequisites) section below for details.
+Then, make sure you have the required software installed for development. See the [Prerequisites](#Prerequisites) section below for details.
 
 ## Renaming your Analyzer
 
@@ -22,7 +22,11 @@ After that, the script will complete the renaming process and exit.
     SPI
     Mark's SPI Analyzer
 
-Once renamed, you're ready to build your analyzer! See the [Building your Analyzer](##-Building-your-Analyzer) section below.
+Once renamed, you're ready to build your analyzer! See the [Building your Analyzer](#Building-your-Analyzer) section below.
+
+## Cloud Building & Publishing
+
+This example repository includes support for GitHub actions, which is a continuous integration service from GitHub. 
 
 ## Prerequisites
 
@@ -98,6 +102,7 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
+# built analyzer will be located at SampleAnalyzer/build/Analyzers/libSimpleSerialAnalyzer.so
 ```
 
 ### Linux
@@ -107,4 +112,5 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
+# built analyzer will be located at SampleAnalyzer/build/Analyzers/libSimpleSerialAnalyzer.so
 ```
