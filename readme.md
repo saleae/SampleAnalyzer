@@ -15,6 +15,7 @@
     + [Windows](#windows-2)
     + [MacOS](#macos-2)
     + [Linux](#linux-2)
+  * [Updating an Existing Analyzer to use CMake & GitHub Actions](#updating-an-existing-analyzer-to-use-cmake---github-actions)
 
 The Saleae Analyzer SDK is used to create custom plugins for the Saleae Logic software. These plugins are used to decode protocol data from captured waveforms.
 
@@ -196,3 +197,17 @@ break MyAnalyzer::WorkerThread
 Because your analyzer hasn't been loaded yet, GDB will notify you that it can't find this function, and ask if you want to automatically set this breakpoint if a library with a matching function is loaded in the future.  Type y <enter>
 
 Then return to the application and add your analyzer. This should trigger the breakpoint.
+
+## Updating an Existing Analyzer to use CMake & GitHub Actions
+
+If you maintain an existing C++ analyzer, or wish to fork and update someone else's analyzer, please follow these steps.
+
+1. Delete the contents of the existing repository, except for the source directory.
+2. Copy the contents of this sample repository into the existing analyzer, except for the src and docs directories.
+3. Rename the existing source directory to src.
+4. In the new CMakeLists.txt file, make the following changes:
+  - In the line `project(SimpleSerialAnalyzer)`, replace `SimpleSerialAnalyzer` with the name of the existing analyzer, for example `project(I2CAnalyzer)`
+  - In the section `set(SOURCES`, replace all of the existing source code file names with the file names of the existing source code.
+5. Update the readme! Feel free to just reference the SampleAnalyzer repository, or copy over the build instructions.
+6. Try the build instructions to make sure the analyzer still builds, or commit this to GitHub to have GitHub actions build it for you!
+7. Once you're ready to create a release, add a tag to your last commit to trigger GitHub to publish a release.
