@@ -234,15 +234,46 @@ gdb
 attach <pid>
 ```
 
-And then test setting a breakpoint like this:
+If you see a permissions error like this, you will need to temporarily change the `ptrace_scope` setting on your system.
+
+> Could not attach to process. [...] ptrace: Operation not permitted.
+
+You can change the `ptrace_scope` like so, which will then allow you to attach to another process without sudo. (Be sure to `quit` gdb first)
+
+```bash
+sudo sysctl -w kernel.yama.ptrace_scope=0
+```
+
+You can learn more about `ptrace_scope` here: https://www.kernel.org/doc/Documentation/security/Yama.txt
+
+
+Next, test setting a breakpoint like this. Be sure to use the correct class name.
 
 ```
 break MyAnalyzer::WorkerThread
 ```
 
-Because your analyzer hasn't been loaded yet, GDB will notify you that it can't find this function, and ask if you want to automatically set this breakpoint if a library with a matching function is loaded in the future. Type y `<enter>`
+finally, attaching to the process will have paused the Logic application execution. Resume it with the continue command:
+
+```bash
+continue
+```
+
+If your analyzer hasn't been loaded yet, GDB will notify you that it can't find this function, and ask if you want to automatically set this breakpoint if a library with a matching function is loaded in the future. Type `y <enter>`
 
 Then return to the application and add your analyzer. This should trigger the breakpoint.
+
+To verify that symbols for your custom analyzer are loading, check the backtrace with the `bt` command. Example output:
+
+```
+#0  0x00007f2677dc42a8 in I4CAnalyzer::WorkerThread() ()
+   from /home/build/Downloads/SampleAnalyzer-modernization-2022/build/Analyzers/libI4CAnalyzer.so
+#1  0x00007f267046f24a in Analyzer::InitialWorkerThread() () from /tmp/.mount_Logic-0Fyxvr/resources/linux/libAnalyzer.so
+#2  0x00007f267263bed9 in ?? () from /tmp/.mount_Logic-0Fyxvr/resources/linux/libgraph_server_shared.so
+#3  0x00007f267264688e in ?? () from /tmp/.mount_Logic-0Fyxvr/resources/linux/libgraph_server_shared.so
+#4  0x00007f26828e1609 in start_thread (arg=<optimized out>) at pthread_create.c:477
+#5  0x00007f2681136293 in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:95
+```
 
 ## Updating an Existing Analyzer to use CMake & GitHub Actions
 
