@@ -202,8 +202,8 @@ Then return to the application and add your analyzer. This should trigger the br
 
 If you maintain an existing C++ analyzer, or wish to fork and update someone else's analyzer, please follow these steps.
 
-1. Delete the contents of the existing repository, except for the source directory.
-2. Copy the contents of this sample repository into the existing analyzer, except for the src and docs directories.
+1. Delete the contents of the existing repository, except for the source directory, and the readme.
+2. Copy the contents of this sample repository into the existing analyzer, except for the src and docs directories, or the rename_analyzer.py script.
 3. Rename the existing source directory to src.
 4. In the new CMakeLists.txt file, make the following changes:
   - In the line `project(SimpleSerialAnalyzer)`, replace `SimpleSerialAnalyzer` with the name of the existing analyzer, for example `project(I2CAnalyzer)`
