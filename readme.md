@@ -42,13 +42,15 @@ After that, the script will complete the renaming process and exit.
 
 Once renamed, you're ready to build your analyzer! See the [Building your Analyzer](#Building-your-Analyzer) section below.
 
-API documentation can be found in `./docs/Analyzer API.md`.
+API documentation can be found in [docs/Analyzer_API.md](docs/Analyzer_API.md).
 
 ## Cloud Building & Publishing
 
 This example repository includes support for GitHub actions, which is a continuous integration service from GitHub. The file located at `.github\workflows\build.yml` contains the configuration.
 
 When building in CI, the release version of the analyzer is built for Windows, Linux, and MacOS. The built analyzer files are available for every CI build. Additionally, GitHub releases are automatically created for any tagged commits, making it easy to share pre-built binaries with others once your analyzer is complete.
+
+Learn how to tag a commit here: https://stackoverflow.com/questions/18216991/create-a-tag-in-a-github-repository
 
 ### Using downloaded analyzer binaries on MacOS
 
