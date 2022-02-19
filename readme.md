@@ -1,21 +1,21 @@
 # Saleae Analyzer SDK Sample Analyzer
 
 - [Saleae Analyzer SDK Sample Analyzer](#saleae-analyzer-sdk-sample-analyzer)
-  * [Renaming your Analyzer](#renaming-your-analyzer)
-  * [Cloud Building & Publishing](#cloud-building---publishing)
-  * [Prerequisites](#prerequisites)
-    + [Windows](#windows)
-    + [MacOS](#macos)
-    + [Linux](#linux)
-  * [Building your Analyzer](#building-your-analyzer)
-    + [Windows](#windows-1)
-    + [MacOS](#macos-1)
-    + [Linux](#linux-1)
-  * [Debugging](#debugging)
-    + [Windows](#windows-2)
-    + [MacOS](#macos-2)
-    + [Linux](#linux-2)
-  * [Updating an Existing Analyzer to use CMake & GitHub Actions](#updating-an-existing-analyzer-to-use-cmake---github-actions)
+  - [Renaming your Analyzer](#renaming-your-analyzer)
+  - [Cloud Building & Publishing](#cloud-building---publishing)
+  - [Prerequisites](#prerequisites)
+    - [Windows](#windows)
+    - [MacOS](#macos)
+    - [Linux](#linux)
+  - [Building your Analyzer](#building-your-analyzer)
+    - [Windows](#windows-1)
+    - [MacOS](#macos-1)
+    - [Linux](#linux-1)
+  - [Debugging](#debugging)
+    - [Windows](#windows-2)
+    - [MacOS](#macos-2)
+    - [Linux](#linux-2)
+  - [Updating an Existing Analyzer to use CMake & GitHub Actions](#updating-an-existing-analyzer-to-use-cmake---github-actions)
 
 The Saleae Analyzer SDK is used to create custom plugins for the Saleae Logic software. These plugins are used to decode protocol data from captured waveforms.
 
@@ -50,19 +50,56 @@ This example repository includes support for GitHub actions, which is a continuo
 
 When building in CI, the release version of the analyzer is built for Windows, Linux, and MacOS. The built analyzer files are available for every CI build. Additionally, GitHub releases are automatically created for any tagged commits, making it easy to share pre-built binaries with others once your analyzer is complete.
 
+### Using downloaded analyzer binaries on MacOS
+
+This section only applies to downloaded pre-built protocol analyzer binaries on MacOS. If you build the protocol analyzer locally, or acquire it in a different way, this section does not apply.
+
+Any time you download a binary from the internet on a Mac, wether it be an application or a shared library, MacOS will flag that binary for "quarantine". MacOS then requires any quarantined binary to be signed and notarized through the MacOS developer program before it will allow that binary to be executed.
+
+Because of this, when you download a pre-compiled protocol analyzer plugin from the internet and try to load it in the Saleae software, you will most likely see an error message like this:
+
+> "libSimpleSerialAnalyzer.so" cannot be opened because th developer cannot be verified.
+
+Signing and notarizing of open source software can be rare, because it requires an active paid subscription to the MacOS developer program, and the signing and notarization process frequently changes and becomes more restrictive, requiring frequent updates to the build process.
+
+The quickest solution to this is to simply remove the quarantine flag added by MacOS using a simple command line tool.
+
+Note - the purpose of code signing and notarization is to help end users be sure that the binary they downloaded did indeed come from the original publisher and hasn't been modified. Saleae does not create, control, or review 3rd party analyzer plugins available on the internet, and thus you must trust the original author and the website where you are downloading the plugin. (This applies to all software you've ever downloaded, essentially.)
+
+To remove the quarantine flag on MacOS, you can simply open the terminal and navigate to the directory containing the downloaded shared library.
+
+This will show what flags are present on the binary:
+
+```sh
+xattr libSimpleSerialAnalyzer.so
+# example output:
+# com.apple.macl
+# com.apple.quarantine
+```
+
+This command will remove the quarantine flag:
+
+```sh
+xattr -r -d com.apple.quarantine libSimpleSerialAnalyzer.so
+```
+
+To verify the flag was removed, run the first command again and verify the quarantine flag is no longer present.
+
 ## Prerequisites
 
 ### Windows
 
 Dependencies:
+
 - Visual Studio 2017 (or newer) with C++
 - CMake 3.13+
 
 **Visual Studio 2017**
 
-*Note - newer versions of Visual Studio should be fine.*
+_Note - newer versions of Visual Studio should be fine._
 
 Setup options:
+
 - Programming Languages > Visual C++ > select all sub-components.
 
 Note - if CMake has any problems with the MSVC compiler, it's likely a component is missing.
@@ -75,10 +112,12 @@ https://cmake.org/download/
 ### MacOS
 
 Dependencies:
+
 - XCode with command line tools
 - CMake 3.13+
 
 Installing command line tools after XCode is installed:
+
 ```
 xcode-select --install
 ```
@@ -90,13 +129,17 @@ Installing CMake on MacOS:
 1. Download the binary distribution for MacOS, `cmake-*-Darwin-x86_64.dmg`
 2. Install the usual way by dragging into applications.
 3. Open a terminal and run the following:
+
 ```
 /Applications/CMake.app/Contents/bin/cmake-gui --install
 ```
-*Note: Errors may occur if older versions of CMake are installed.*
+
+_Note: Errors may occur if older versions of CMake are installed._
+
 ### Linux
 
 Dependencies:
+
 - CMake 3.13+
 - gcc 5+
 
@@ -105,6 +148,7 @@ Misc dependencies:
 ```
 sudo apt-get install build-essential
 ```
+
 ## Building your Analyzer
 
 ### Windows
@@ -167,15 +211,15 @@ Make sure you already have recorded data in the application, and then add an ins
 
 ### MacOS
 
-It is possible to debug using xcode, by generating an xcode project using CMake. To Generate a CMake project, either create a new directory or delete the existing build directory, and from that directory run:
+We don't have a clear process for how to debug custom protocol analyzers on MacOS. If you attempt to attach a debugger to the Logic 2 software, you will likely see an error like this:
 
-```bash
-cmake .. -G Xcode
-```
+> error: attach failed: attach failed (Not allowed to attach to process. Look in the console messages (Console.app), near the debugserver entries, when the attach failed. The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)
 
-This will generate an xcode project. The process for debugging requires you to set a breakpoint in your code, then attach the Xcode debugger to the Logic process, using the PID mentioned above.
+Checking the output in Console.app, you will likely find logs like this:
 
-Alternatively, gdb / lldb can be used, using the instructions found in the Linux section below, but substituting gdb with lldb when necessary.
+> macOSTaskPolicy: (com.apple.debugserver) may not get the task control port of (Logic2 Helper (R) (pid: 95234): (Logic2 Helper (R) is hardened, (Logic2 Helper (R) doesn't have get-task-allow, (com.apple.debugserver) is a declared debugger(com.apple.debugserver) is not a declared read-only debugger
+
+This is likely due to our signing and notarization process on MacOS not adding the `get-task-allow` entitlement. If you're in need of MacOS debugging, please contact Saleae support to request it.
 
 ### Linux
 
@@ -191,10 +235,12 @@ attach <pid>
 ```
 
 And then test setting a breakpoint like this:
+
 ```
 break MyAnalyzer::WorkerThread
 ```
-Because your analyzer hasn't been loaded yet, GDB will notify you that it can't find this function, and ask if you want to automatically set this breakpoint if a library with a matching function is loaded in the future.  Type y <enter>
+
+Because your analyzer hasn't been loaded yet, GDB will notify you that it can't find this function, and ask if you want to automatically set this breakpoint if a library with a matching function is loaded in the future. Type y `<enter>`
 
 Then return to the application and add your analyzer. This should trigger the breakpoint.
 
@@ -206,8 +252,10 @@ If you maintain an existing C++ analyzer, or wish to fork and update someone els
 2. Copy the contents of this sample repository into the existing analyzer, except for the src and docs directories, or the rename_analyzer.py script.
 3. Rename the existing source directory to src.
 4. In the new CMakeLists.txt file, make the following changes:
-  - In the line `project(SimpleSerialAnalyzer)`, replace `SimpleSerialAnalyzer` with the name of the existing analyzer, for example `project(I2CAnalyzer)`
-  - In the section `set(SOURCES`, replace all of the existing source code file names with the file names of the existing source code.
+
+- In the line `project(SimpleSerialAnalyzer)`, replace `SimpleSerialAnalyzer` with the name of the existing analyzer, for example `project(I2CAnalyzer)`
+- In the section `set(SOURCES`, replace all of the existing source code file names with the file names of the existing source code.
+
 5. Update the readme! Feel free to just reference the SampleAnalyzer repository, or copy over the build instructions.
 6. Try the build instructions to make sure the analyzer still builds, or commit this to GitHub to have GitHub actions build it for you!
 7. Once you're ready to create a release, add a tag to your last commit to trigger GitHub to publish a release.
