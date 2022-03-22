@@ -248,7 +248,6 @@ sudo sysctl -w kernel.yama.ptrace_scope=0
 
 You can learn more about `ptrace_scope` here: https://www.kernel.org/doc/Documentation/security/Yama.txt
 
-
 Next, test setting a breakpoint like this. Be sure to use the correct class name.
 
 ```
@@ -282,8 +281,8 @@ To verify that symbols for your custom analyzer are loading, check the backtrace
 If you maintain an existing C++ analyzer, or wish to fork and update someone else's analyzer, please follow these steps.
 
 1. Delete the contents of the existing repository, except for the source directory, and the readme.
-2. Copy the contents of this sample repository into the existing analyzer, except for the src and docs directories, or the rename_analyzer.py script.
-3. Rename the existing source directory to src.
+2. Copy the contents of this sample repository into the existing analyzer, except for the src and docs directories, or the rename_analyzer.py script. The `.clang-format` file is optional, it would allow you to auto-format your code to our style using [clang-format](https://clang.llvm.org/docs/ClangFormat.html).
+3. Rename the existing source directory to src. This is optional, but it might make future updates from this sample analyzer easier to roll out. Make sure the CMakeLists.txt file reflects your source path.
 4. In the new CMakeLists.txt file, make the following changes:
 
 - In the line `project(SimpleSerialAnalyzer)`, replace `SimpleSerialAnalyzer` with the name of the existing analyzer, for example `project(I2CAnalyzer)`
