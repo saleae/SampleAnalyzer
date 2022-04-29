@@ -866,7 +866,11 @@ A *Frame* is an object, with fairly generic member variables which can be used t
     };
 
 A *Frame* represents a piece of information conveyed by your protocol over an expanse of time. The
-member variables *mStartingSampleInclusive* and *mEndingSampleInclusive* are the sample numbers for the beginning and end of the *Frame*. Note that Frames may not overlap; they cannot even share the same sample. For example, if a single clock edge ends one Frame, and starts a new Frame, then you’ll need to add one (+1) to the *mStartingSampleInclusive* of the second frame.
+member variables *mStartingSampleInclusive* and *mEndingSampleInclusive* are the sample numbers for the beginning and end of the *Frame*. 
+
+Please note the following:
+- Frames may not overlap and they cannot share the same sample. For example, if a single clock edge ends one Frame, and starts a new Frame, then you’ll need to add one (+1) to the *mStartingSampleInclusive* of the second frame.
+- A single Frame cannot have *mStartingSampleInclusive* and *mEndingSampleInclusive* be equal. They must be at least 1 sample apart.
 
 In addition, the *Frame* can carry two 64-bit numbers as data. For example, in SPI, one of these is used for the MISO result, and the other for the MISO result. Often times you’ll only use one of these variables.
 
