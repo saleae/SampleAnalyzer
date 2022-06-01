@@ -9,6 +9,7 @@ GameCubeControllerAnalyzer::GameCubeControllerAnalyzer()
     : Analyzer2(), mSettings( new GameCubeControllerAnalyzerSettings() ), mSimulationInitilized( false )
 {
     SetAnalyzerSettings( mSettings.get() );
+    UseFrameV2();
 }
 
 GameCubeControllerAnalyzer::~GameCubeControllerAnalyzer()
