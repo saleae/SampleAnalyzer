@@ -4,14 +4,15 @@
 #include <AnalyzerSettings.h>
 #include <AnalyzerTypes.h>
 
-class GameCubeControllerAnalyzerSettings : public AnalyzerSettings {
+class GameCubeControllerAnalyzerSettings : public AnalyzerSettings
+{
   public:
     GameCubeControllerAnalyzerSettings();
     virtual ~GameCubeControllerAnalyzerSettings();
 
     virtual bool SetSettingsFromInterfaces();
     void UpdateInterfacesFromSettings();
-    virtual void LoadSettings(const char* settings);
+    virtual void LoadSettings( const char* settings );
     virtual const char* SaveSettings();
 
     Channel mInputChannel;

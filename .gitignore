@@ -1,7 +1,2 @@
-debug/
-release/
-*.VC.db
-*.VC.opendb
-*.suo
-*.sln.ecd
-*.vcxproj.user
+/build
+.DS_Store

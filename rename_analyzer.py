@@ -11,9 +11,9 @@ print("")
 print("")
 print("What would you like to call your new analyzer?")
 print("")
-print(">>The files under '/source' will be modified to use it.")
+print(">>The files under '/src' will be modified to use it.")
 print(">>Examples include Serial, MySerial, JoesSerial, Gamecube, Wiimote, 2Wire, etc.")
-print(">>Do not inclide the trailing word 'Analyzer' this will be added automaticly.")
+print(">>Do not inclide the trailing word 'Analyzer' this will be added automatically.")
 print("")
 print("(press CTRL-C to cancel)")
 print("")
@@ -22,7 +22,7 @@ new_analyzer_name = input( "Your new analyzer name: " )
 
 print("")
 print("")
-print("What is the analyzer's title? (as shown in the add new anlayzer drop down)")
+print("What is the analyzer's title? (as shown in the add new analyzer drop down)")
 print("")
 print(">>Examples include Async Serial, I2C, Joe's Serial, Gamecube, Wiimote, 2Wire, etc.")
 print("")
@@ -33,24 +33,20 @@ new_analyzer_title = input( "Your new analyzer's title: " )
 
 original_name = "SimpleSerial"
 
+#update the CMakeLists.txt project name
 
-vs_project_path = "Visual Studio"
-os.chdir( vs_project_path )
 
-project_files = glob.glob("*.sln") + glob.glob("*.vcxproj") #returns only the file names, no paths.
+cmake_file = glob.glob("CMakeLists.txt")
 
-for file in project_files:
+for file in cmake_file:
 	contents = open( file, 'r' ).read()
 	contents = contents.replace( original_name + "Analyzer", new_analyzer_name + "Analyzer" )
 	contents = contents.replace( original_name.upper() + "ANALYZER", new_analyzer_name.upper() + "ANALYZER" )
 	contents = contents.replace( original_name + "SimulationDataGenerator", new_analyzer_name + "SimulationDataGenerator" )
 	open( file, 'w' ).write( contents )
 
-os.rename( glob.glob("*.sln")[0], new_analyzer_name + "Analyzer.sln" )
-os.rename( glob.glob("*.vcxproj")[0], new_analyzer_name + "Analyzer.vcxproj" )
 
-source_path = "source"
-os.chdir( ".." )
+source_path = "src"
 os.chdir( source_path )
 
 files = dict()
