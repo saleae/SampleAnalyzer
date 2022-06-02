@@ -32,6 +32,13 @@ void GameCubeControllerAnalyzer::WorkerThread()
 
     AdvanceToEndOfPacket();
 
+    while( true )
+    {
+        DecodeFrames();
+        ReportProgress( mGamecube->GetSampleNumber() );
+        CheckIfThreadShouldExit();
+    }
+
     // while( true )
     // {
     //     bool idle = false;
@@ -158,14 +165,22 @@ void DestroyAnalyzer( Analyzer* analyzer )
 
 U64 GameCubeControllerAnalyzer::GetPulseWidthNs( U64 start_edge, U64 end_edge )
 {
-    return ( end_edge - start_edge ) * 1e9 / mSampleRateHz;
+    return static_cast<U64>( ( end_edge - start_edge ) * 1e9 / mSampleRateHz );
 }
+#include <iostream>
+#include <assert.h>
 
+// advances to the rising edge at the end of a packet
 void GameCubeControllerAnalyzer::AdvanceToEndOfPacket()
 {
-    // TODO: skip short edges
-    if( mGamecube->GetBitState() == BIT_HIGH )
+    if( mGamecube->GetBitState() == BIT_LOW )
     {
+        mGamecube->AdvanceToNextEdge();
+    }
+
+    while( GetPulseWidthNs( mGamecube->GetSampleNumber(), mGamecube->GetSampleOfNextEdge() ) < 1e5 )
+    {
+        mGamecube->AdvanceToNextEdge();
         mGamecube->AdvanceToNextEdge();
     }
 }
@@ -173,95 +188,145 @@ void GameCubeControllerAnalyzer::AdvanceToEndOfPacket()
 void GameCubeControllerAnalyzer::DecodeFrames()
 {
     FrameV2 frame_v2;
+
+    // traverse to the first falling edge
+    mGamecube->AdvanceToNextEdge();
+
+    U64 start_sample = mGamecube->GetSampleNumber();
     // try to decode the command
-    U8 cmd;
+    U8 cmd, data;
+
     if( !DecodeByte( cmd ) )
     {
         AdvanceToEndOfPacket();
+        return;
     }
+    mGamecube->AdvanceToNextEdge();
 
     // TODO: support more commands, there is a list here: https://n64brew.dev/wiki/Joybus_Protocol
     switch( cmd )
     {
     case 0x00:
-        DecodeStopBit();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeStopBit();
-        break;
+    {
+        if( !DecodeStopBit() )
+        {
+            AdvanceToEndOfPacket();
+            return;
+        }
+        mGamecube->AdvanceToNextEdge();
 
-    case 0x40:
-        DecodeByte();
-        DecodeByte();
-        DecodeStopBit();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeStopBit();
-        break;
+        // response
+        uint16_t device = 0;
+        if( !DecodeByte( data ) )
+        {
+            AdvanceToEndOfPacket();
+            return;
+        }
+        mGamecube->AdvanceToNextEdge();
+        device |= data;
 
-    case 0x41:
-        DecodeStopBit();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeStopBit();
-        break;
+        if( !DecodeByte( data ) )
+        {
+            AdvanceToEndOfPacket();
+            return;
+        }
+        mGamecube->AdvanceToNextEdge();
+        device |= data << 8;
+        frame_v2.AddInteger( "device", device );
 
-    case 0x42:
-        DecodeByte();
-        DecodeByte();
-        DecodeStopBit();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeStopBit();
-        break;
+        if( !DecodeByte( data ) )
+        {
+            AdvanceToEndOfPacket();
+            return;
+        }
+        mGamecube->AdvanceToNextEdge();
+        frame_v2.AddByte( "status", data );
 
-    case 0x43:
-        DecodeByte();
-        DecodeByte();
         DecodeStopBit();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeByte();
-        DecodeStopBit();
-        break;
+        U64 end_sample = mGamecube->GetSampleNumber();
+        mResults->AddFrameV2( frame_v2, "id", start_sample, end_sample );
+        AdvanceToEndOfPacket();
+    }
+    break;
+
+        // case 0x40:
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeStopBit();
+        //     // response
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeStopBit();
+        //     break;
+
+        // case 0x41:
+        //     DecodeStopBit();
+        //     // response
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeStopBit();
+        //     break;
+
+        // case 0x42:
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeStopBit();
+        //     // response
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeStopBit();
+        //     break;
+
+        // case 0x43:
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeStopBit();
+        //     // response
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeByte();
+        //     DecodeStopBit();
+        //     break;
 
     default:
+        AdvanceToEndOfPacket();
         break;
     }
+
+    mResults->CommitResults();
 }
 
 // attempts to decode a byte. the current sample should be a falling edge and this
-// function will return on a falling edge (?)
+// function will return on a rising edge
 bool GameCubeControllerAnalyzer::DecodeByte( U8& byte )
 {
     byte = 0;
@@ -270,13 +335,19 @@ bool GameCubeControllerAnalyzer::DecodeByte( U8& byte )
         bool bit;
         if( !DecodeDataBit( bit ) )
         {
+            std::cout << "DecodeByte() failed" << std::endl;
             return false;
         }
 
         byte |= bit << ( 7 - i );
 
-        // only advance to the next falling edge on success
-        mGamecube->AdvanceToNextEdge();
+        if( i < 7 )
+        {
+            // advance to the next falling edge iff
+            // - there are more bits to process in the current byte
+            // - the last bit was successful
+            mGamecube->AdvanceToNextEdge();
+        }
     }
 
     return true;
@@ -297,21 +368,21 @@ bool GameCubeControllerAnalyzer::DecodeDataBit( bool& bit )
 
     if( low_time >= 5000 )
     {
+        std::cout << "DecodeDataBit() failed" << std::endl;
         return false;
     }
     else
     {
-        if( low_time < 2000 )
-        {
-            bit = 1;
-        }
+        bit = low_time < 2000;
 
         // make sure the high time is reasonable. peek at the next falling edge, but don't
         // actually advance to it yet, in case something is wrong.
         ending_sample = falling_edge_sample = mGamecube->GetSampleOfNextEdge();
         U64 high_time = GetPulseWidthNs( rising_edge_sample, falling_edge_sample );
+
         if( high_time >= 5000 )
         {
+            std::cout << "DecodeDataBit() failed" << std::endl;
             return false;
         }
 

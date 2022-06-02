@@ -21,6 +21,7 @@ void GameCubeControllerSimulationDataGenerator::Initialize( U32 simulation_sampl
     mGamecubeSimulationData.SetChannel( mSettings->mInputChannel );
     mGamecubeSimulationData.SetSampleRate( simulation_sample_rate );
     mGamecubeSimulationData.SetInitialBitState( BIT_HIGH );
+    GenerateDelayLong();
 }
 
 U32 GameCubeControllerSimulationDataGenerator::GenerateSimulationData( U64 largest_sample_requested, U32 sample_rate,
@@ -87,7 +88,7 @@ void GameCubeControllerSimulationDataGenerator::GenerateDelayShort()
 }
 void GameCubeControllerSimulationDataGenerator::GenerateDelayLong()
 {
-    mGamecubeSimulationData.Advance( NsToSamples( 1000000 ) );
+    mGamecubeSimulationData.Advance( NsToSamples( 1000000000 ) );
 }
 
 void GameCubeControllerSimulationDataGenerator::GenerateIdCmd()
