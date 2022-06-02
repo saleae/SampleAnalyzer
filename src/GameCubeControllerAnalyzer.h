@@ -47,6 +47,7 @@ class ANALYZER_EXPORT GameCubeControllerAnalyzer : public Analyzer2
 
     U64 GetPulseWidthNs( U64 start_edge, U64 end_edge );
     void AdvanceToEndOfPacket();
+    bool AdvanceToNextBitInPacket();
     void DecodeFrames();
     bool DecodeByte( U8& byte );
     bool DecodeDataBit( bool& bit );

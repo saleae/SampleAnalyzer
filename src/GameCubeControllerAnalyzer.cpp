@@ -185,6 +185,15 @@ void GameCubeControllerAnalyzer::AdvanceToEndOfPacket()
     }
 }
 
+bool GameCubeControllerAnalyzer::AdvanceToNextBitInPacket() {
+    if (GetPulseWidthNs( mGamecube->GetSampleNumber(), mGamecube->GetSampleOfNextEdge() ) < 1e5) {
+        mGamecube->AdvanceToNextEdge();
+        return true;
+    }
+
+    return false;
+}
+
 void GameCubeControllerAnalyzer::DecodeFrames()
 {
     FrameV2 frame_v2;
@@ -196,55 +205,55 @@ void GameCubeControllerAnalyzer::DecodeFrames()
     // try to decode the command
     U8 cmd, data;
 
-    if( !DecodeByte( cmd ) )
+    if( !DecodeByte( cmd ) || !AdvanceToNextBitInPacket())
     {
         AdvanceToEndOfPacket();
         return;
     }
-    mGamecube->AdvanceToNextEdge();
 
     // TODO: support more commands, there is a list here: https://n64brew.dev/wiki/Joybus_Protocol
     switch( cmd )
     {
     case 0x00:
     {
-        if( !DecodeStopBit() )
+        if( !DecodeStopBit() || !AdvanceToNextBitInPacket())
         {
             AdvanceToEndOfPacket();
             return;
         }
-        mGamecube->AdvanceToNextEdge();
+        std::cout << "id: decoded stop bit" << std::endl;
 
         // response
         uint16_t device = 0;
-        if( !DecodeByte( data ) )
+        if( !DecodeByte( data ) || !AdvanceToNextBitInPacket())
         {
             AdvanceToEndOfPacket();
             return;
         }
-        mGamecube->AdvanceToNextEdge();
+        std::cout << "id: decoded device byte 0" << std::endl;
         device |= data;
 
-        if( !DecodeByte( data ) )
+        if( !DecodeByte( data ) || !AdvanceToNextBitInPacket())
         {
             AdvanceToEndOfPacket();
             return;
         }
-        mGamecube->AdvanceToNextEdge();
+        std::cout << "id: decoded device byte 1" << std::endl;
         device |= data << 8;
         frame_v2.AddInteger( "device", device );
 
-        if( !DecodeByte( data ) )
+        if( !DecodeByte( data ) || !AdvanceToNextBitInPacket())
         {
             AdvanceToEndOfPacket();
             return;
         }
-        mGamecube->AdvanceToNextEdge();
+        std::cout << "id: decoded device status" << std::endl;
         frame_v2.AddByte( "status", data );
 
         DecodeStopBit();
         U64 end_sample = mGamecube->GetSampleNumber();
         mResults->AddFrameV2( frame_v2, "id", start_sample, end_sample );
+
         AdvanceToEndOfPacket();
     }
     break;
@@ -335,7 +344,7 @@ bool GameCubeControllerAnalyzer::DecodeByte( U8& byte )
         bool bit;
         if( !DecodeDataBit( bit ) )
         {
-            std::cout << "DecodeByte() failed" << std::endl;
+            std::cout << "DecodeByte() failed -> " << (int)i << std::endl;
             return false;
         }
 
@@ -349,6 +358,7 @@ bool GameCubeControllerAnalyzer::DecodeByte( U8& byte )
             mGamecube->AdvanceToNextEdge();
         }
     }
+    std::cout << "DecodeByte(): " << (int) byte << std::endl;
 
     return true;
 }
@@ -368,7 +378,7 @@ bool GameCubeControllerAnalyzer::DecodeDataBit( bool& bit )
 
     if( low_time >= 5000 )
     {
-        std::cout << "DecodeDataBit() failed" << std::endl;
+        std::cout << "DecodeDataBit() failed: low_time -> " << low_time << std::endl;
         return false;
     }
     else
@@ -382,7 +392,7 @@ bool GameCubeControllerAnalyzer::DecodeDataBit( bool& bit )
 
         if( high_time >= 5000 )
         {
-            std::cout << "DecodeDataBit() failed" << std::endl;
+            std::cout << "DecodeDataBit() failed: high_time -> " << high_time << std::endl;
             return false;
         }
 
