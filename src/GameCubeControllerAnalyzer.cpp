@@ -120,8 +120,6 @@ void GameCubeControllerAnalyzer::DecodeFrames()
     U64 start_sample = mGamecube->GetSampleNumber();
 
     U8 cmd, data;
-    bool ok = true;
-    FrameV2 frame_v2;
 
     // try to decode the command
     if( !DecodeByte( cmd ) )
@@ -130,10 +128,17 @@ void GameCubeControllerAnalyzer::DecodeFrames()
         return;
     }
 
+    bool ok = true;
+    FrameV2 frame_v2;
+    // TODO: delete when FrameV2 supports bubble generation
+    Frame frame;
+    frame.mStartingSampleInclusive = start_sample;
+    frame.mType = cmd;
+
     // TODO: support more commands, there is a list here: https://n64brew.dev/wiki/Joybus_Protocol
     switch( cmd )
     {
-    case 0x00:
+    case JoyBusCommand::CMD_ID:
     {
         // command stop bit
         if( !( AdvanceToNextBitInPacket() && DecodeStopBit() ) )
@@ -172,11 +177,14 @@ void GameCubeControllerAnalyzer::DecodeFrames()
         AdvanceToEndOfPacket();
 
         U64 end_sample = mGamecube->GetSampleNumber();
+        frame.mEndingSampleInclusive = end_sample;
+        mResults->AddFrame( frame );
         mResults->AddFrameV2( frame_v2, "id", start_sample, end_sample );
+        mResults->CommitResults();
     }
     break;
 
-    case 0x40:
+    case JoyBusCommand::CMD_STATUS:
     {
         // command arg1
         if( !( AdvanceToNextBitInPacket() && DecodeByte( data ) ) )
@@ -258,11 +266,14 @@ void GameCubeControllerAnalyzer::DecodeFrames()
         AdvanceToEndOfPacket();
 
         U64 end_sample = mGamecube->GetSampleNumber();
+        frame.mEndingSampleInclusive = end_sample;
+        mResults->AddFrame( frame );
         mResults->AddFrameV2( frame_v2, "status", start_sample, end_sample );
+        mResults->CommitResults();
     }
     break;
 
-    case 0x41:
+    case JoyBusCommand::CMD_ORIGIN:
     {
         // command stop bit
         if( !( AdvanceToNextBitInPacket() && DecodeStopBit() ) )
@@ -340,12 +351,15 @@ void GameCubeControllerAnalyzer::DecodeFrames()
         AdvanceToEndOfPacket();
 
         U64 end_sample = mGamecube->GetSampleNumber();
+        frame.mEndingSampleInclusive = end_sample;
+        mResults->AddFrame( frame );
         mResults->AddFrameV2( frame_v2, "origin", start_sample, end_sample );
+        mResults->CommitResults();
     }
     break;
 
 
-    case 0x42:
+    case JoyBusCommand::CMD_RECALIBRATE:
     {
         // command arg1
         if( !( AdvanceToNextBitInPacket() && DecodeByte( data ) ) )
@@ -439,11 +453,14 @@ void GameCubeControllerAnalyzer::DecodeFrames()
         AdvanceToEndOfPacket();
 
         U64 end_sample = mGamecube->GetSampleNumber();
+        frame.mEndingSampleInclusive = end_sample;
+        mResults->AddFrame( frame );
         mResults->AddFrameV2( frame_v2, "Recalibrate", start_sample, end_sample );
+        mResults->CommitResults();
     }
     break;
 
-    case 0x43:
+    case JoyBusCommand::CMD_STATUS_LONG:
     {
         // command arg1
         if( !( AdvanceToNextBitInPacket() && DecodeByte( data ) ) )
@@ -537,7 +554,10 @@ void GameCubeControllerAnalyzer::DecodeFrames()
         AdvanceToEndOfPacket();
 
         U64 end_sample = mGamecube->GetSampleNumber();
+        frame.mEndingSampleInclusive = end_sample;
+        mResults->AddFrame( frame );
         mResults->AddFrameV2( frame_v2, "status (long)", start_sample, end_sample );
+        mResults->CommitResults();
     }
     break;
 
@@ -545,8 +565,6 @@ void GameCubeControllerAnalyzer::DecodeFrames()
         AdvanceToEndOfPacket();
         break;
     }
-
-    mResults->CommitResults();
 }
 
 // attempts to decode a byte. the current sample should be a falling edge and this

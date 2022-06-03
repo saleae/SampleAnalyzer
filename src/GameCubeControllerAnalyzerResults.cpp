@@ -19,48 +19,34 @@ GameCubeControllerAnalyzerResults::~GameCubeControllerAnalyzerResults()
 
 void GameCubeControllerAnalyzerResults::GenerateBubbleText( U64 frame_index, Channel& channel, DisplayBase display_base )
 {
-    // ClearResultStrings();
-    // Frame frame = GetFrame( frame_index );
+    ClearResultStrings();
+    Frame frame = GetFrame( frame_index );
 
-    // bool error = frame.mFlags & DISPLAY_AS_ERROR_FLAG;
+    switch( frame.mType )
+    {
+    case GameCubeControllerAnalyzer::JoyBusCommand::CMD_ID:
+        AddResultString( "ID" );
+        break;
 
-    // if( !error )
-    // {
-    //     char number_str[ 128 ];
-    //     AnalyzerHelpers::GetNumberString( frame.mData1, display_base, 8, number_str, 128 );
+    case GameCubeControllerAnalyzer::JoyBusCommand::CMD_STATUS:
+        AddResultString( "Status" );
+        break;
 
-    //     switch( frame.mType )
-    //     {
-    //     case GameCubeControllerAnalyzer::CMD_ID:
-    //         AddResultString( "ID: ", number_str );
-    //         break;
+    case GameCubeControllerAnalyzer::JoyBusCommand::CMD_ORIGIN:
+        AddResultString( "Origin" );
+        break;
 
-    //     case GameCubeControllerAnalyzer::CMD_STATUS:
-    //         AddResultString( "Status: ", number_str );
-    //         break;
+    case GameCubeControllerAnalyzer::JoyBusCommand::CMD_RECALIBRATE:
+        AddResultString( "Recalibrate" );
+        break;
 
-    //     case GameCubeControllerAnalyzer::CMD_ORIGIN:
-    //         AddResultString( "Origin: ", number_str );
-    //         break;
+    case GameCubeControllerAnalyzer::JoyBusCommand::CMD_STATUS_LONG:
+        AddResultString( "Status Long" );
+        break;
 
-    //     case GameCubeControllerAnalyzer::CMD_RECALIBRATE:
-    //         AddResultString( "Recalibrate: ", number_str );
-    //         break;
-
-    //     case GameCubeControllerAnalyzer::CMD_STATUS_LONG:
-    //         AddResultString( "Status Long: ", number_str );
-    //         break;
-
-    //     default:
-    //         AddResultString( number_str );
-    //         break;
-    //     }
-    // }
-    // else
-    // {
-    //     // This is not really worth enabling unless you can change the color
-    //     AddResultString( "ERROR: Invalid frame" );
-    // }
+    default:
+        break;
+    }
 }
 
 void GameCubeControllerAnalyzerResults::GenerateExportFile( const char* file, DisplayBase display_base, U32 export_type_user_id )
