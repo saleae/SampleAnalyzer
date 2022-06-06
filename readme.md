@@ -187,7 +187,7 @@ cmake --build .
 
 The Logic 2 software will need to be opened from the terminal using a specific command to enable simluation mode. Otherwise, by default, when an analyzer is added to digital channels while in Demo mode (i.e. no Logic is connected to the PC), the simulation data on those digital channels will contain seemingly random transitions and will not contain analyzer-specific data.
 
-For instructions on enabling simulation mode on the Logic 2 software, please follow the instructions below:
+For instructions on enabling simulation mode on the Logic 2 software, please follow the instructions here:
 https://support.saleae.com/user-guide/using-logic/demo-mode#generating-analyzer-simulation-data 
 
 ## Debugging
