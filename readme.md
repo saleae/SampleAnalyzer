@@ -11,6 +11,7 @@
     - [Windows](#windows-1)
     - [MacOS](#macos-1)
     - [Linux](#linux-1)
+  - [Generating Analyzer Simulation Data](#generating-sim-data)
   - [Debugging](#debugging)
     - [Windows](#windows-2)
     - [MacOS](#macos-2)
