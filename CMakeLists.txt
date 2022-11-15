@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.13)
 
-project(SimpleSerialAnalyzer)
+project(keeloqAnalyzer)
 
 add_definitions( -DLOGIC2 )
 
@@ -13,14 +13,14 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(ExternalAnalyzerSDK)
 
 set(SOURCES 
-src/SimpleSerialAnalyzer.cpp
-src/SimpleSerialAnalyzer.h
-src/SimpleSerialAnalyzerResults.cpp
-src/SimpleSerialAnalyzerResults.h
-src/SimpleSerialAnalyzerSettings.cpp
-src/SimpleSerialAnalyzerSettings.h
-src/SimpleSerialSimulationDataGenerator.cpp
-src/SimpleSerialSimulationDataGenerator.h
+src/keeloqAnalyzer.cpp
+src/keeloqAnalyzer.h
+src/keeloqAnalyzerResults.cpp
+src/keeloqAnalyzerResults.h
+src/keeloqAnalyzerSettings.cpp
+src/keeloqAnalyzerSettings.h
+src/keeloqSimulationDataGenerator.cpp
+src/keeloqSimulationDataGenerator.h
 )
 
 add_analyzer_plugin(${PROJECT_NAME} SOURCES ${SOURCES})
