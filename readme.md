@@ -215,7 +215,13 @@ Make sure you already have recorded data in the application, and then add an ins
 
 ### MacOS
 
-We don't have a clear process for how to debug custom protocol analyzers on MacOS. If you attempt to attach a debugger to the Logic 2 software, you will likely see an error like this:
+On MacOS, you can debug your custom analyzer using lldb.
+
+However, before before you can attach a debugger to the Logic 2 process on MacOS, you will need do add an additional [entitlement](https://developer.apple.com/documentation/bundleresources/entitlements) to the Logic 2 app packages.
+
+This is because in order to distribute applications for MacOS, these applications must be [signed and notarized](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution). One requirement for notarization is that debugging support is disabled.
+
+If you attempt to attach a debugger to the Logic 2 process without adding an additional entitlement manually, you will se an error like this:
 
 > error: attach failed: attach failed (Not allowed to attach to process. Look in the console messages (Console.app), near the debugserver entries, when the attach failed. The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)
 
@@ -223,7 +229,34 @@ Checking the output in Console.app, you will likely find logs like this:
 
 > macOSTaskPolicy: (com.apple.debugserver) may not get the task control port of (Logic2 Helper (R) (pid: 95234): (Logic2 Helper (R) is hardened, (Logic2 Helper (R) doesn't have get-task-allow, (com.apple.debugserver) is a declared debugger(com.apple.debugserver) is not a declared read-only debugger
 
-This is likely due to our signing and notarization process on MacOS not adding the `get-task-allow` entitlement. If you're in need of MacOS debugging, please contact Saleae support to request it.
+To fix this, you will need to add the [get-task-allow](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_cs_debugger) entitlement to all of the Logic 2 app packages.
+
+You can use this 3rd party convenience script with the instructions below to add the entitlements. This process needs to be completed once per computer, and will need to be repeated after updating Logic 2.
+
+[https://gist.github.com/talaviram/1f21e141a137744c89e81b58f73e23c3](https://gist.github.com/talaviram/1f21e141a137744c89e81b58f73e23c3)
+
+Review and download that script, then add execution permissions from the terminal with `chmod +x add_debug_entitlement.sh`
+
+Then run that script on the Logic 2 app directory, as well as the various included electron helper app packages:
+
+```bash
+./add_debug_entitlement.sh /Applications/Logic2.app
+./add_debug_entitlement.sh /Applications/Logic2.app/Contents/Frameworks/Logic2\ Helper\ \(GPU\).app
+./add_debug_entitlement.sh /Applications/Logic2.app/Contents/Frameworks/Logic2\ Helper.app
+./add_debug_entitlement.sh /Applications/Logic2.app/Contents/Frameworks/Logic2\ Helper\ \(Plugin\).app
+./add_debug_entitlement.sh /Applications/Logic2.app/Contents/Frameworks/Logic2\ Helper\ \(Renderer\).app
+```
+
+Now you're all set! To debug with command line lldb, simply launch the Logic 2 software and check the PID as explained above. Then run this from the terminal:
+
+```bash
+lldb
+attach <pid>
+```
+
+Please see the Linux instructions below for more gdb command examples, which _mostly_ translate to lldb 1:1.
+
+Once complete, you should also be able to attach other debugger GUIs like xcode or CLion to Logic 2 using the same PID.
 
 ### Linux
 
