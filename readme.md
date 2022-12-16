@@ -217,11 +217,11 @@ Make sure you already have recorded data in the application, and then add an ins
 
 On MacOS, you can debug your custom analyzer using lldb.
 
-However, before before you can attach a debugger to the Logic 2 process on MacOS, you will need do add an additional [entitlement](https://developer.apple.com/documentation/bundleresources/entitlements) to the Logic 2 app packages.
+However, before you can attach a debugger to the Logic 2 process on MacOS, you will need to add an additional [entitlement](https://developer.apple.com/documentation/bundleresources/entitlements) to the Logic 2 app packages.
 
 This is because in order to distribute applications for MacOS, these applications must be [signed and notarized](https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution). One requirement for notarization is that debugging support is disabled.
 
-If you attempt to attach a debugger to the Logic 2 process without adding an additional entitlement manually, you will se an error like this:
+If you attempt to attach a debugger to the Logic 2 process without adding an additional entitlement manually, you will see an error like this:
 
 > error: attach failed: attach failed (Not allowed to attach to process. Look in the console messages (Console.app), near the debugserver entries, when the attach failed. The subsystem that denied the attach permission will likely have logged an informative message about why it was denied.)
 
