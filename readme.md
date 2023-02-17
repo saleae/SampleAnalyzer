@@ -205,7 +205,7 @@ when `cmake .. -A x64` was run, a Visual Studio solution file was created automa
 
 Then, open the Debug menu, and select "attach to process...".
 
-Enter the PID number into the Filter box to find the correct instance of Logic.exe.
+In the "Attach to:" selection box, ensure that "Native code" is selected. This is usually selected by default. If not, you will need to select it manually by clicking the "Select..." button to the right. Afterwards, enter the PID number into the Filter box to find the correct instance of Logic.exe.
 
 Click attach.
 
