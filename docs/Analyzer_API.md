@@ -18,7 +18,7 @@
     + [Specifying Export Options](#specifying-export-options)
     + [Specifying which channels are in use](#specifying-which-channels-are-in-use)
     + [AnalyzerSettings Destructor](#analyzersettings-destructor)
-    + [```AnalyzerSetting::SetSettingsFromInterfaces()```](#---analyzersetting--setsettingsfrominterfaces-----)
+    + [```{YourName}AnalyzerSettings::SetSettingsFromInterfaces()```](#----yourname-analyzersettings--setsettingsfrominterfaces-----)
     + [```{YourName}AnalyzerSettings::UpdateInterfacesFromSettings()```](#----yourname-analyzersettings--updateinterfacesfromsettings-----)
     + [```{YourName}AnalyzerSettings::LoadSettings()```](#----yourname-analyzersettings--loadsettings-----)
     + [```{YourName}AnalyzerSettings::SaveSettings()```](#----yourname-analyzersettings--savesettings-----)
@@ -269,7 +269,7 @@ Note that in the constructor, we have set ```is_used``` to ```false```. This is 
 
 Generally you won’t need to do anything in your ```AnalyzerSettings``` derived class’s destructor. However, if you are using standard (raw) pointers for your settings interfaces, you’ll need to delete them here.
 
-### ```AnalyzerSetting::SetSettingsFromInterfaces()```
+### ```{YourName}AnalyzerSettings::SetSettingsFromInterfaces()```
 
 As the name implies, in this function we will copy the values saved in our interface objects to our
 settings variables. This function will be called if the user updates the settings.
@@ -394,7 +394,7 @@ const char* SimpleSerialAnalyzerSettings::SaveSettings()
 
 # ```AnalyzerResults```
 
-After creating your ```SimulationDataGenerator``` class, working on your *{YourName}AnalyzerResults* files is the next step.
+After creating your ```AnalyzerSettings``` class, working on your *{YourName}AnalyzerResults* files is the next step.
 
 ```AnalyzerResults``` is what we use to transform our results into text for display and as well as exported files, etc.
 
@@ -569,7 +569,7 @@ Other than that, the implementation is pretty straightforward. Here is an exampl
 ```SerialAnalyzerResults.cpp```:
 
 ```c++
-void SerialAnalyzerResults::GenerateExportFile( const char* file, DisplayBase display_base, U32 /```export_type_user_id```/ )
+void SerialAnalyzerResults::GenerateExportFile( const char* file, DisplayBase display_base, U32 /*export_type_user_id*/ )
 {
     // export_type_user_id is only important if we have more than one export type.
     std::ofstream file_stream( file, std::ios::out );
@@ -603,7 +603,7 @@ if( UpdateExportProgressAndCheckForCancel( i, num_frames ) == true )
     file_stream.close();
 }
 ```
-### ```SerialAnalyzerResults::GenerateFrameTabularText()```
+### ```{YourName}AnalyzerResults::GenerateFrameTabularText()```
 
 ```GenerateFrameTabularText``` is for producing text for tabular display which is not yet implemented as of 1.1.5. You can safely leave it empty.  ```GenerateFrameTabularText``` is almost the same as ```GenerateBubbleText``` , except that you should generate only one text result. Ideally the string should be concise, and only be a couple inches long or less under normal (non error) circumstances.
 
@@ -644,11 +644,11 @@ void SerialAnalyzerResults::GenerateFrameTabularText( U64 frame_index, DisplayBa
     }
 }
 ```
-### ```SerialAnalyzerResults::GeneratePacketTabularText()```
+### ```{YourName}AnalyzerResults::GeneratePacketTabularText()```
 
 This function is used to produce strings representing packet results for the tabular view. For now, just leave it empty. We’ll be updating the SDK and software to take advantage of this capability later.
 
-### ```SerialAnalyzerResults::GenerateTransactionTabularText()```
+### ```{YourName}AnalyzerResults::GenerateTransactionTabularText()```
 
 This function is used to produce strings representing packet results for the tabular view. For now, just leave it empty. We’ll be updating the SDK and software to take advantage of this capability later.
 
@@ -717,7 +717,7 @@ This function gives you the opportunity to run the analyzer all over again, on t
 
 If you return ```true``` , that’s all there is to do. Your analyzer will be re-run automatically.
 
-## ```Analyzer::GenerateSimulationData()```
+## ```{YourName}Analyzer::GenerateSimulationData()```
 
 This is the function that gets called to obtain simulated data. We made a dedicated class for handling this earlier – we just need to do some housekeeping here to hook it up.
 
@@ -733,7 +733,7 @@ U32 {YourName}Analyzer::GenerateSimulationData( U64 minimum_sample_index, U32 de
     return mSimulationDataGenerator.GenerateSimulationData( minimum_sample_index, device_sample_rate, simulation_channels );
 }
 ```
-## ```U32 SerialAnalyzer::GetMinimumSampleRateHz()```
+## ```U32 {YourName}Analyzer::GetMinimumSampleRateHz()```
 
 This function is called to see if the user’s selected sample rate is sufficient to get good results for this analyzer.  For Serial, for instance, we would like the sample rate to be x4 higher that the serial bit rate.  For other, typically synchronous, protocols, you may not ask the user to enter the data’s bit rate – therefore you can’t know ahead of time what sample rate is required. In that case, you can either return the smallest sample rate (25000), or return a value that will be fast enough for your simulation.  However, your simulation really should adjust its own rate depending on the sample rate – for example, when simulation SPI you should probably make the bit rate something like 4x the sample rate. This will allow the simulation to work perfectly no matter what the sample rate is.   The rule of thumb is to require oversampling by x4 if you know the data’s bit rate, otherwise just return 25000.  Here’s what we do in ```SerialAnalyzer.cpp```
 
