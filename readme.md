@@ -107,13 +107,13 @@ Examples:
 ```bash
 mkdir -p build/arm64
 cd build/arm64
-cmake -DCMAKE_OSX_ARCHITECTURES=arm64 ..
+cmake -DCMAKE_OSX_ARCHITECTURES=arm64 ../..
 cmake --build .
 cd ../..
 # built analyzer will be located at SampleAnalyzer/build/arm64/Analyzers/libSimpleSerialAnalyzer.so
 mkdir -p build/x86_64
 cd build/x86_64
-cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 ..
+cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 ../..
 cmake --build .
 cd ../..
 # built analyzer will be located at SampleAnalyzer/build/x86_64/Analyzers/libSimpleSerialAnalyzer.so
