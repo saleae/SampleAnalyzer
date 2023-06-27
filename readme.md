@@ -127,6 +127,7 @@ Dependencies:
 
 - Visual Studio 2017 (or newer) with C++
 - CMake 3.13+
+- git
 
 **Visual Studio 2017**
 
@@ -143,12 +144,17 @@ Note - if CMake has any problems with the MSVC compiler, it's likely a component
 Download and install the latest CMake release here.
 https://cmake.org/download/
 
+**git**
+
+Git is required for CMake to automatically download the AnalyzerSDK, which is a dependency of this project. Git can be downloaded here: https://git-scm.com/
+
 ### MacOS
 
 Dependencies:
 
 - XCode with command line tools
 - CMake 3.13+
+- git
 
 Installing command line tools after XCode is installed:
 
@@ -176,6 +182,7 @@ Dependencies:
 
 - CMake 3.13+
 - gcc 5+
+- git
 
 Misc dependencies:
 
