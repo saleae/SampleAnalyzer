@@ -2,7 +2,8 @@
 
 - [Saleae Analyzer SDK Sample Analyzer](#saleae-analyzer-sdk-sample-analyzer)
   - [Renaming your Analyzer](#renaming-your-analyzer)
-  - [Cloud Building & Publishing](#cloud-building---publishing)
+  - [Cloud Building & Publishing](#cloud-building--publishing)
+    - [Apple Silicon Support](#apple-silicon-support)
   - [Prerequisites](#prerequisites)
     - [Windows](#windows)
     - [MacOS](#macos)
@@ -87,6 +88,37 @@ xattr -r -d com.apple.quarantine libSimpleSerialAnalyzer.so
 
 To verify the flag was removed, run the first command again and verify the quarantine flag is no longer present.
 
+### Apple Silicon Support
+
+Logic 2 now supports Apple Silicon natively!
+
+The included Github Actions integration, documented [here](#cloud-building---publishing), will automatically build your analyzer for both x86_64 and arm64 architectures, for MacOS.
+
+When you build your custom analyzer on a Mac, by default it will compile for the architecture of the system.
+
+Unfortunately, universal binaries are not currently supported.
+
+You can optionally cross build your analyzer using an x86_64 host system targeting arm64, or from a arm64 host system targeting x86_64.
+
+To cross build, you will need to create a new build directory (for example `build/x86_64` or `build/arm64`). Then use the CMake variable [CMAKE_OSX_ARCHITECTURES](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_ARCHITECTURES.html).
+
+Examples:
+
+```bash
+mkdir -p build/arm64
+cd build/arm64
+cmake -DCMAKE_OSX_ARCHITECTURES=arm64 ../..
+cmake --build .
+cd ../..
+# built analyzer will be located at SampleAnalyzer/build/arm64/Analyzers/libSimpleSerialAnalyzer.so
+mkdir -p build/x86_64
+cd build/x86_64
+cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 ../..
+cmake --build .
+cd ../..
+# built analyzer will be located at SampleAnalyzer/build/x86_64/Analyzers/libSimpleSerialAnalyzer.so
+```
+
 ## Prerequisites
 
 ### Windows
@@ -95,6 +127,7 @@ Dependencies:
 
 - Visual Studio 2017 (or newer) with C++
 - CMake 3.13+
+- git
 
 **Visual Studio 2017**
 
@@ -111,12 +144,17 @@ Note - if CMake has any problems with the MSVC compiler, it's likely a component
 Download and install the latest CMake release here.
 https://cmake.org/download/
 
+**git**
+
+Git is required for CMake to automatically download the AnalyzerSDK, which is a dependency of this project. Git can be downloaded here: https://git-scm.com/
+
 ### MacOS
 
 Dependencies:
 
 - XCode with command line tools
 - CMake 3.13+
+- git
 
 Installing command line tools after XCode is installed:
 
@@ -144,6 +182,7 @@ Dependencies:
 
 - CMake 3.13+
 - gcc 5+
+- git
 
 Misc dependencies:
 
