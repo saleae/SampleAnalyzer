@@ -230,7 +230,7 @@ First, build your analyzer. Then, in the Logic 2 software, load your custom anal
 
 Once restarted, the software should show your custom analyzer in the list of available analyzers.
 
-Next, in order to attach your debugger, you will need to find the process ID of the Logic 2 software. To make this easy, we display the process ID of the correct process in the About dialog in the software, which you can open from the main menu. It's the last item in the "Build Info" box, labeled "PID". Note that this is not the correct PID when using an ARM based M1 Mac. (Please contact support for details on debugging on M1 Macs.)
+Next, in order to attach your debugger, you will need to find the process ID of the Logic 2 software. To make this easy, we display the process ID of the correct process in the About dialog in the software, which you can open from the main menu. It's the last item in the "Build Info" box, labeled "PID". (Note, if you are using MacOS and you see "Architecture: x64 (Translated)" in the about dialog, this PID won't work. Contact support for details.)
 
 ![PID shown in about dialog](./docs/pid.png)
 
