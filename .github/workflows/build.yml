@@ -25,6 +25,9 @@ jobs:
   macos:
     runs-on: macos-latest
     steps:
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
     - uses: actions/checkout@v4
     - name: Build
       run: |
