@@ -200,6 +200,9 @@ cd build
 cmake .. -A x64
 cmake --build .
 :: built analyzer will be located at SampleAnalyzer\build\Analyzers\Debug\SimpleSerialAnalyzer.dll
+:: use the release build when sharing your analyzer! debug builds only work on your machine.
+cmake --build . --config Release
+:: release built analyzer will be located at SampleAnalyzer\build\Analyzers\Release\SimpleSerialAnalyzer.dll
 ```
 
 ### MacOS
