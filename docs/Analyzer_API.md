@@ -673,8 +673,8 @@ extern "C" ANALYZER_EXPORT void __cdecl DestroyAnalyzer( Analyzer* analyzer );
 
 You’ll also need these member variables:
 ```c++
-std::auto_ptr< {YourName}AnalyzerSettings > mSettings;
-std::auto_ptr< {YourName}AnalyzerResults > mResults;
+{YourName}AnalyzerSettings mSettings;
+{YourName}AnalyzerResults mResults;
 {YourName}SimulationDataGenerator mSimulationDataGenerator;
 bool mSimulationInitialized;
 ```

@@ -22,8 +22,8 @@ public:
 	virtual bool NeedsRerun();
 
 protected: //vars
-	std::auto_ptr< SimpleSerialAnalyzerSettings > mSettings;
-	std::auto_ptr< SimpleSerialAnalyzerResults > mResults;
+	SimpleSerialAnalyzerSettings mSettings;
+	SimpleSerialAnalyzerResults mResults;
 	AnalyzerChannelData* mSerial;
 
 	SimpleSerialSimulationDataGenerator mSimulationDataGenerator;
