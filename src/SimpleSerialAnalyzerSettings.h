@@ -4,7 +4,7 @@
 #include <AnalyzerSettings.h>
 #include <AnalyzerTypes.h>
 
-class SimpleSerialAnalyzerSettings : public AnalyzerSettings
+class ANALYZER_EXPORT SimpleSerialAnalyzerSettings : public AnalyzerSettings
 {
 public:
 	SimpleSerialAnalyzerSettings();

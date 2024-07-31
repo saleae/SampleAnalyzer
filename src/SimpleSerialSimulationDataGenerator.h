@@ -5,7 +5,7 @@
 #include <string>
 class SimpleSerialAnalyzerSettings;
 
-class SimpleSerialSimulationDataGenerator
+class ANALYZER_EXPORT SimpleSerialSimulationDataGenerator
 {
 public:
 	SimpleSerialSimulationDataGenerator();
@@ -20,7 +20,10 @@ protected:
 
 protected:
 	void CreateSerialByte();
+#pragma warning( push )
+#pragma warning( disable : 4251 ) // warning C4251: ... needs to have dll-interface to be used by clients of class
 	std::string mSerialText;
+#pragma warning( pop )
 	U32 mStringIndex;
 
 	SimulationChannelDescriptor mSerialSimulationData;

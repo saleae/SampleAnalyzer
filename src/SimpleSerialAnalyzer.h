@@ -24,7 +24,10 @@ public:
 
 protected: //vars
 	SimpleSerialAnalyzerSettings mSettings;
+#pragma warning( push )
+#pragma warning( disable : 4251 ) // warning C4251: ... needs to have dll-interface to be used by clients of class
 	std::unique_ptr<SimpleSerialAnalyzerResults> mResults;
+#pragma warning( pop )
 	AnalyzerChannelData* mSerial;
 
 	SimpleSerialSimulationDataGenerator mSimulationDataGenerator;

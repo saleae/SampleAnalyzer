@@ -6,7 +6,7 @@
 class SimpleSerialAnalyzer;
 class SimpleSerialAnalyzerSettings;
 
-class SimpleSerialAnalyzerResults : public AnalyzerResults
+class ANALYZER_EXPORT SimpleSerialAnalyzerResults : public AnalyzerResults
 {
 public:
 	SimpleSerialAnalyzerResults( SimpleSerialAnalyzer* analyzer, SimpleSerialAnalyzerSettings* settings );
