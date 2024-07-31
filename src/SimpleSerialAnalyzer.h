@@ -2,10 +2,9 @@
 #define SIMPLESERIAL_ANALYZER_H
 
 #include <Analyzer.h>
+#include "SimpleSerialAnalyzerSettings.h"
 #include "SimpleSerialAnalyzerResults.h"
 #include "SimpleSerialSimulationDataGenerator.h"
-
-class SimpleSerialAnalyzerSettings;
 class ANALYZER_EXPORT SimpleSerialAnalyzer : public Analyzer2
 {
 public:
