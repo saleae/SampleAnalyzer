@@ -180,7 +180,7 @@ First, initialize all your settings variables to their default values.  Second, 
 
 ### Setting up each AnalyzerSettingInterface object
 
-Ee call the member function ```SetTitleAndTooltip()```. The title will appear to the left of the input element. Note that often times you won’t need a title, but you should use one for ```Channels```. The tooltip shows up when hovering over the input element.
+First, call the member function ```SetTitleAndTooltip()```. The title will appear to the left of the input element. Note that often times you won’t need a title, but you should use one for ```Channels```. The tooltip shows up when hovering over the input element.
 ```c++    
 void SetTitleAndTooltip( const char* title, const char* tooltip );
 mInputChannelInterface.SetTitleAndTooltip( "Serial", "Standard Async Serial" );
