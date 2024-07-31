@@ -667,7 +667,7 @@ extern "C" ANALYZER_EXPORT void __cdecl DestroyAnalyzer( Analyzer* analyzer );
 You’ll also need these member variables:
 ```c++
 {YourName}AnalyzerSettings mSettings;
-{YourName}AnalyzerResults mResults;
+std::unique_ptr<{YourName}AnalyzerResults> mResults;
 {YourName}SimulationDataGenerator mSimulationDataGenerator;
 bool mSimulationInitialized;
 ```
@@ -686,7 +686,6 @@ Your constructor will look something like this
 {YourName}Analyzer::{YourName}Analyzer()
 : Analyzer(),
 mSettings(),
-mResults(this, &mSettings),
 mSimulationInitialized( false )
 {
 SetAnalyzerSettings( &mSettings );
@@ -765,15 +764,15 @@ delete analyzer;
 ## ```{YourName}Analyzer::WorkerThread()```
 Ok, now that everything else is taken care of, let’s look at the most important part of the analyzer in detail.  First, we’ll reset our ```AnalyzerResults``` derived object. This is because your analyzer class instance may be re-used for multiple runs, so at the beginning of each run, the generated results must be reset.
 ```c++
-mResults = {YourName}AnalyzerResults( this, &mSettings );
+mResults.reset( new {YourName}AnalyzerResults( this, &mSettings ) );
 ```
 Well provide a pointer to our results to the base class:
 ```c++
-SetAnalyzerResults( &mResults );
+SetAnalyzerResults( mResults.get() );
 ```
 Let’s indicate which channels we’ll be displaying results on (in the form of bubbles). Usually this will only be one channel. (Except in the case of SPI, where we’ll want to put bubbles on both the MISO and MISO lines.) Only indicate where we will display bubbles – other markup, like tick marks, arrows, etc, are not bubbles, and should not be reported here.
 ```c++
-mResults.AddChannelBubblesWillAppearOn( mSettings.mInputChannel );
+mResults->AddChannelBubblesWillAppearOn( mSettings.mInputChannel );
 ```
 We’ll probably want to know (and save in a member variable) the sample rate.
 ```c++
@@ -862,8 +861,8 @@ if( such_and_such_error == true )
   frame.mFlags |= SUCH_AND_SUCH_ERROR_FLAG | DISPLAY_AS_ERROR_FLAG;
 if( such_and_such_warning == true )
   frame.mFlags |= SUCH_AND_SUCH_WARNING_FLAG | DISPLAY_AS_WARNING_FLAG;
-mResults.AddFrame( frame );
-mResults.CommitResults();
+mResults->AddFrame( frame );
+mResults->CommitResults();
 ReportProgress( frame.mEndingSampleInclusive );
 ```
 
@@ -886,7 +885,7 @@ void AddMarker( U64 sample_number, MarkerType marker_type, Channel& channel );
 ```
 For example, from ```SerialAnalyzer.cpp``` :
 ```c++
-mResults.AddMarker( marker_location, AnalyzerResults::Dot, mSettings.mInputChannel );
+mResults->AddMarker( marker_location, AnalyzerResults::Dot, mSettings.mInputChannel );
 ```
 Currently, the available graphical artifacts are
 

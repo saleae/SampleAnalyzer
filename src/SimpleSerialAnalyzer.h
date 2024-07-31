@@ -5,6 +5,8 @@
 #include "SimpleSerialAnalyzerSettings.h"
 #include "SimpleSerialAnalyzerResults.h"
 #include "SimpleSerialSimulationDataGenerator.h"
+#include <memory>
+
 class ANALYZER_EXPORT SimpleSerialAnalyzer : public Analyzer2
 {
 public:
@@ -22,7 +24,7 @@ public:
 
 protected: //vars
 	SimpleSerialAnalyzerSettings mSettings;
-	SimpleSerialAnalyzerResults mResults;
+	std::unique_ptr<SimpleSerialAnalyzerResults> mResults;
 	AnalyzerChannelData* mSerial;
 
 	SimpleSerialSimulationDataGenerator mSimulationDataGenerator;
