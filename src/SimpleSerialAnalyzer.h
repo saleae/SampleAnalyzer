@@ -2,10 +2,11 @@
 #define SIMPLESERIAL_ANALYZER_H
 
 #include <Analyzer.h>
+#include "SimpleSerialAnalyzerSettings.h"
 #include "SimpleSerialAnalyzerResults.h"
 #include "SimpleSerialSimulationDataGenerator.h"
+#include <memory>
 
-class SimpleSerialAnalyzerSettings;
 class ANALYZER_EXPORT SimpleSerialAnalyzer : public Analyzer2
 {
 public:
@@ -22,8 +23,8 @@ public:
 	virtual bool NeedsRerun();
 
 protected: //vars
-	std::auto_ptr< SimpleSerialAnalyzerSettings > mSettings;
-	std::auto_ptr< SimpleSerialAnalyzerResults > mResults;
+	SimpleSerialAnalyzerSettings mSettings;
+	std::unique_ptr<SimpleSerialAnalyzerResults> mResults;
 	AnalyzerChannelData* mSerial;
 
 	SimpleSerialSimulationDataGenerator mSimulationDataGenerator;

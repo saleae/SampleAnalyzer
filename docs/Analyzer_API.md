@@ -172,8 +172,6 @@ One of the services the Analyzer SDK provides is a means for users to edit your 
 - ```AnalyzerSettingInterfaceText``` - Allows a user to enter some text into a textbox.
 - ```AnalyzerSettingInterfaceBool``` - Provides the user with a checkbox.
 
-```AnalyzerSettingsInterface``` types should be declared as pointers.  We’re using the ```std::auto_ptr``` type, which largely acts like a standard (raw) pointer. It’s a simple form of what’s called a “smart pointer” and it automatically calls ```delete``` on its contents when it goes out of scope.
-
 ## {YourName}AnalyzerSettings.cpp
 
 ### The Constructor
@@ -182,15 +180,10 @@ First, initialize all your settings variables to their default values.  Second, 
 
 ### Setting up each AnalyzerSettingInterface object
 
-First, we create the object (call new) and assign the value to the interface’s pointer. Note that we’re using ```std::auto_ptr```, so this means calling the member function ```reset()```. For standard (raw pointers), you would do something like:
-```c++    
-mInputChannelInterface = new AnalyzerSettingInterfaceChannel();
-```
-
-Next, we call the member function ```SetTitleAndTooltip()```. The title will appear to the left of the input element. Note that often times you won’t need a title, but you should use one for ```Channels```. The tooltip shows up when hovering over the input element.
+First, call the member function ```SetTitleAndTooltip()```. The title will appear to the left of the input element. Note that often times you won’t need a title, but you should use one for ```Channels```. The tooltip shows up when hovering over the input element.
 ```c++    
 void SetTitleAndTooltip( const char* title, const char* tooltip );
-mInputChannelInterface->SetTitleAndTooltip( "Serial", "Standard Async Serial" );
+mInputChannelInterface.SetTitleAndTooltip( "Serial", "Standard Async Serial" );
 ```
 Finally, We’ll want to set the value. The interface object is, well, an interface to our settings variables. When setting up the interface, we copy the value from our settings variable to the interface. When the user makes a change, we copy the value in the interface to our settings variable. The function names for this differ depending on the type of interface.
 ```c++
@@ -292,7 +285,7 @@ After assigning the interface values to your settings variables, you also need t
 ```c++
 bool SimpleSerialAnalyzerSettings::SetSettingsFromInterfaces()
 {
-  mInputChannel = mInputChannelInterface->GetChannel();
+  mInputChannel = mInputChannelInterface.GetChannel();
   mBitRate = mBitRateInterface->GetInteger();
   ClearChannels();
   AddChannel( mInputChannel, "Simple Serial", true );
@@ -307,7 +300,7 @@ bool SimpleSerialAnalyzerSettings::SetSettingsFromInterfaces()
 ```c++
 void SimpleSerialAnalyzerSettings::UpdateInterfacesFromSettings()
 {
-  mInputChannelInterface->SetChannel( mInputChannel );
+  mInputChannelInterface.SetChannel( mInputChannel );
   mBitRateInterface->SetInteger( mBitRate );
 }
 ```
@@ -673,8 +666,8 @@ extern "C" ANALYZER_EXPORT void __cdecl DestroyAnalyzer( Analyzer* analyzer );
 
 You’ll also need these member variables:
 ```c++
-std::auto_ptr< {YourName}AnalyzerSettings > mSettings;
-std::auto_ptr< {YourName}AnalyzerResults > mResults;
+{YourName}AnalyzerSettings mSettings;
+std::unique_ptr<{YourName}AnalyzerResults> mResults;
 {YourName}SimulationDataGenerator mSimulationDataGenerator;
 bool mSimulationInitialized;
 ```
@@ -692,13 +685,13 @@ Your constructor will look something like this
 ```c++
 {YourName}Analyzer::{YourName}Analyzer()
 : Analyzer(),
-mSettings( new {YourName}AnalyzerSettings() ),
+mSettings(),
 mSimulationInitialized( false )
 {
-SetAnalyzerSettings( mSettings.get() );
+SetAnalyzerSettings( &mSettings );
 }
 ```
-Note that here you’re calling the base class constructor, ```new()```'ing your ```AnalyzerSettings``` derived class, and providing the base class with a pointer to your ```AnalyzerSettings``` - derived object.
+Note that here you’re calling the base class constructor and providing the base class with a pointer to your ```AnalyzerSettings``` - derived object.
 
 ## Destructor
 This only thing your destructor must do is call ```KillThread```. This is a base class member function and will make sure your class destructs in the right order.
@@ -727,7 +720,7 @@ U32 {YourName}Analyzer::GenerateSimulationData( U64 minimum_sample_index, U32 de
 {
     if( mSimulationInitialized == false )
     {
-        mSimulationDataGenerator.Initialize( GetSimulationSampleRate(), mSettings.get() );
+        mSimulationDataGenerator.Initialize( GetSimulationSampleRate(), &mSettings );
         mSimulationInitialized = true;
     }
     return mSimulationDataGenerator.GenerateSimulationData( minimum_sample_index, device_sample_rate, simulation_channels );
@@ -740,7 +733,7 @@ This function is called to see if the user’s selected sample rate is sufficien
 ```c++
 U32 SerialAnalyzer::GetMinimumSampleRateHz()
 {
-  return mSettings->mBitRate * 4;
+  return mSettings.mBitRate * 4;
 }
 ```
 
@@ -769,9 +762,9 @@ delete analyzer;
 ```
 
 ## ```{YourName}Analyzer::WorkerThread()```
-Ok, now that everything else is taken care of, let’s look at the most important part of the analyzer in detail.  First, we’ll ```new``` our ```AnalyzerResults``` derived object.
+Ok, now that everything else is taken care of, let’s look at the most important part of the analyzer in detail.  First, we’ll reset our ```AnalyzerResults``` derived object. This is because your analyzer class instance may be re-used for multiple runs, so at the beginning of each run, the generated results must be reset.
 ```c++
-mResults.reset( new {YourName}AnalyzerResults( this, mSettings.get() ) );
+mResults.reset( new {YourName}AnalyzerResults( this, &mSettings ) );
 ```
 Well provide a pointer to our results to the base class:
 ```c++
@@ -779,7 +772,7 @@ SetAnalyzerResults( mResults.get() );
 ```
 Let’s indicate which channels we’ll be displaying results on (in the form of bubbles). Usually this will only be one channel. (Except in the case of SPI, where we’ll want to put bubbles on both the MISO and MISO lines.) Only indicate where we will display bubbles – other markup, like tick marks, arrows, etc, are not bubbles, and should not be reported here.
 ```c++
-mResults->AddChannelBubblesWillAppearOn( mSettings->mInputChannel );
+mResults->AddChannelBubblesWillAppearOn( mSettings.mInputChannel );
 ```
 We’ll probably want to know (and save in a member variable) the sample rate.
 ```c++
@@ -787,7 +780,7 @@ mSampleRateHz = GetSampleRate();
 ```
 Now we need to get access to the data itself. We’ll need to get pointers to ```AnalyzerChannelData``` objects for each channel we’ll need data from. For Serial, we’ll just need one. For SPI, we might need 4. Etc.
 ```c++
-mSerial = GetAnalyzerChannelData( mSettings->mInputChannel );
+mSerial = GetAnalyzerChannelData( mSettings.mInputChannel );
 ```
 
 # Traversing the Data
@@ -892,7 +885,7 @@ void AddMarker( U64 sample_number, MarkerType marker_type, Channel& channel );
 ```
 For example, from ```SerialAnalyzer.cpp``` :
 ```c++
-mResults->AddMarker( marker_location, AnalyzerResults::Dot, mSettings->mInputChannel );
+mResults->AddMarker( marker_location, AnalyzerResults::Dot, mSettings.mInputChannel );
 ```
 Currently, the available graphical artifacts are
 
@@ -1135,7 +1128,7 @@ SimpleSerialAnalyzerSettings* settings )
 {
   mSimulationSampleRateHz = simulation_sample_rate;
   mSettings = settings;
-  mSerialSimulationData.SetChannel( mSettings->mInputChannel );
+  mSerialSimulationData.SetChannel( mSettings.mInputChannel );
   mSerialSimulationData.SetSampleRate( simulation_sample_rate );
   mSerialSimulationData.SetInitialBitState( BIT_HIGH );
 }
@@ -1179,7 +1172,7 @@ simulation_channel )
 }
 void SimpleSerialSimulationDataGenerator::CreateSerialByte()
 {
-  U32 samples_per_bit = mSimulationSampleRateHz / mSettings->mBitRate;
+  U32 samples_per_bit = mSimulationSampleRateHz / mSettings.mBitRate;
   U8 byte = mSerialText[ mStringIndex ];
   mStringIndex++;
   if( mStringIndex == mSerialText.size() )
@@ -1254,22 +1247,22 @@ void SerialSimulationDataGenerator::CreateSerialByte( U64 value )
     // assume we start high
     mSerialSimulationData.Transition();                                     // low-going edge for start bit
     mSerialSimulationData.Advance( mClockGenerator.AdvanceByHalfPeriod() ); // add
-    start bit time if( mSettings->mInverted == true ) value = ~value;
-    U32 num_bits = mSettings->mBitsPerTransfer;
-    BitExtractor bit_extractor( value, mSettings->mShiftOrder, num_bits );
+    start bit time if( mSettings.mInverted == true ) value = ~value;
+    U32 num_bits = mSettings.mBitsPerTransfer;
+    BitExtractor bit_extractor( value, mSettings.mShiftOrder, num_bits );
     for( U32 i = 0; i < num_bits; i++ )
     {
         mSerialSimulationData.TransitionIfNeeded( bit_extractor.GetNextBit() );
         mSerialSimulationData.Advance( mClockGenerator.AdvanceByHalfPeriod() );
     }
-    if( mSettings->mParity == AnalyzerEnums::Even )
+    if( mSettings.mParity == AnalyzerEnums::Even )
     {
         if( AnalyzerHelpers::IsEven( AnalyzerHelpers::GetOnesCount( value ) ) == true )
             mSerialSimulationData.TransitionIfNeeded( mBitLow );                  // we want to
         add a zero bit else mSerialSimulationData.TransitionIfNeeded( mBitHigh ); // we want to
         add a one bit mSerialSimulationData.Advance( mClockGenerator.AdvanceByHalfPeriod() );
     }
-    else if( mSettings->mParity == AnalyzerEnums::Odd )
+    else if( mSettings.mParity == AnalyzerEnums::Odd )
     {
         if( AnalyzerHelpers::IsOdd( AnalyzerHelpers::GetOnesCount( value ) ) == true )
             mSerialSimulationData.TransitionIfNeeded( mBitLow ); // we want to
@@ -1355,9 +1348,9 @@ U32 I2cSimulationDataGenerator::GenerateSimulationData( U64 largest_sample_reque
 ```c++
 void SpiSimulationDataGenerator::OutputWord_CPHA1( U64 mosi_data, U64 miso_data )
 {
-    BitExtractor mosi_bits( mosi_data, mSettings->mShiftOrder, mSettings - > mBitsPerTransfer );
-    BitExtractor miso_bits( miso_data, mSettings->mShiftOrder, mSettings - > mBitsPerTransfer );
-    U32 count = mSettings->mBitsPerTransfer;
+    BitExtractor mosi_bits( mosi_data, mSettings.mShiftOrder, mSettings - > mBitsPerTransfer );
+    BitExtractor miso_bits( miso_data, mSettings.mShiftOrder, mSettings - > mBitsPerTransfer );
+    U32 count = mSettings.mBitsPerTransfer;
     for( U32 i = 0; i < count; i++ )
     {
         mClock->Transition(); // data invalid
@@ -1381,7 +1374,7 @@ void SpiSimulationDataGenerator::CreateSpiTransaction()
     if( mEnable != NULL )
         mEnable->Transition();
     mSpiSimulationChannels.AdvanceAll( mClockGenerator.AdvanceByHalfPeriod( 2.0 ) );
-    if( mSettings->mDataValidEdge == AnalyzerEnums::LeadingEdge )
+    if( mSettings.mDataValidEdge == AnalyzerEnums::LeadingEdge )
     {
         OutputWord_CPHA0( mValue, mValue + 1 );
         mValue++;

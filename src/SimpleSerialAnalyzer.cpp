@@ -4,10 +4,10 @@
 
 SimpleSerialAnalyzer::SimpleSerialAnalyzer()
 :	Analyzer2(),  
-	mSettings( new SimpleSerialAnalyzerSettings() ),
+	mSettings(),
 	mSimulationInitilized( false )
 {
-	SetAnalyzerSettings( mSettings.get() );
+	SetAnalyzerSettings( &mSettings );
 }
 
 SimpleSerialAnalyzer::~SimpleSerialAnalyzer()
@@ -17,22 +17,23 @@ SimpleSerialAnalyzer::~SimpleSerialAnalyzer()
 
 void SimpleSerialAnalyzer::SetupResults()
 {
-	mResults.reset( new SimpleSerialAnalyzerResults( this, mSettings.get() ) );
+	// SetupResults is called each time the analyzer is run. Because the same instance can be used for multiple runs, we need to clear the results each time.
+	mResults.reset(new SimpleSerialAnalyzerResults( this, &mSettings ));
 	SetAnalyzerResults( mResults.get() );
-	mResults->AddChannelBubblesWillAppearOn( mSettings->mInputChannel );
+	mResults->AddChannelBubblesWillAppearOn( mSettings.mInputChannel );
 }
 
 void SimpleSerialAnalyzer::WorkerThread()
 {
 	mSampleRateHz = GetSampleRate();
 
-	mSerial = GetAnalyzerChannelData( mSettings->mInputChannel );
+	mSerial = GetAnalyzerChannelData( mSettings.mInputChannel );
 
 	if( mSerial->GetBitState() == BIT_LOW )
 		mSerial->AdvanceToNextEdge();
 
-	U32 samples_per_bit = mSampleRateHz / mSettings->mBitRate;
-	U32 samples_to_first_center_of_first_data_bit = U32( 1.5 * double( mSampleRateHz ) / double( mSettings->mBitRate ) );
+	U32 samples_per_bit = mSampleRateHz / mSettings.mBitRate;
+	U32 samples_to_first_center_of_first_data_bit = U32( 1.5 * double( mSampleRateHz ) / double( mSettings.mBitRate ) );
 
 	for( ; ; )
 	{
@@ -48,7 +49,7 @@ void SimpleSerialAnalyzer::WorkerThread()
 		for( U32 i=0; i<8; i++ )
 		{
 			//let's put a dot exactly where we sample this bit:
-			mResults->AddMarker( mSerial->GetSampleNumber(), AnalyzerResults::Dot, mSettings->mInputChannel );
+			mResults->AddMarker( mSerial->GetSampleNumber(), AnalyzerResults::Dot, mSettings.mInputChannel );
 
 			if( mSerial->GetBitState() == BIT_HIGH )
 				data |= mask;
@@ -81,7 +82,7 @@ U32 SimpleSerialAnalyzer::GenerateSimulationData( U64 minimum_sample_index, U32 
 {
 	if( mSimulationInitilized == false )
 	{
-		mSimulationDataGenerator.Initialize( GetSimulationSampleRate(), mSettings.get() );
+		mSimulationDataGenerator.Initialize( GetSimulationSampleRate(), &mSettings );
 		mSimulationInitilized = true;
 	}
 
@@ -90,7 +91,7 @@ U32 SimpleSerialAnalyzer::GenerateSimulationData( U64 minimum_sample_index, U32 
 
 U32 SimpleSerialAnalyzer::GetMinimumSampleRateHz()
 {
-	return mSettings->mBitRate * 4;
+	return mSettings.mBitRate * 4;
 }
 
 const char* SimpleSerialAnalyzer::GetAnalyzerName() const

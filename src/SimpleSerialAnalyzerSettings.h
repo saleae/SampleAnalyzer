@@ -20,8 +20,8 @@ public:
 	U32 mBitRate;
 
 protected:
-	std::auto_ptr< AnalyzerSettingInterfaceChannel >	mInputChannelInterface;
-	std::auto_ptr< AnalyzerSettingInterfaceInteger >	mBitRateInterface;
+	AnalyzerSettingInterfaceChannel	mInputChannelInterface;
+	AnalyzerSettingInterfaceInteger	mBitRateInterface;
 };
 
 #endif //SIMPLESERIAL_ANALYZER_SETTINGS

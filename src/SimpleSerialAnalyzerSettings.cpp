@@ -4,20 +4,20 @@
 
 SimpleSerialAnalyzerSettings::SimpleSerialAnalyzerSettings()
 :	mInputChannel( UNDEFINED_CHANNEL ),
-	mBitRate( 9600 )
+	mBitRate( 9600 ),
+	mInputChannelInterface(),
+	mBitRateInterface()
 {
-	mInputChannelInterface.reset( new AnalyzerSettingInterfaceChannel() );
-	mInputChannelInterface->SetTitleAndTooltip( "Serial", "Standard Simple Serial" );
-	mInputChannelInterface->SetChannel( mInputChannel );
+	mInputChannelInterface.SetTitleAndTooltip( "Serial", "Standard Simple Serial" );
+	mInputChannelInterface.SetChannel( mInputChannel );
 
-	mBitRateInterface.reset( new AnalyzerSettingInterfaceInteger() );
-	mBitRateInterface->SetTitleAndTooltip( "Bit Rate (Bits/S)",  "Specify the bit rate in bits per second." );
-	mBitRateInterface->SetMax( 6000000 );
-	mBitRateInterface->SetMin( 1 );
-	mBitRateInterface->SetInteger( mBitRate );
+	mBitRateInterface.SetTitleAndTooltip( "Bit Rate (Bits/S)",  "Specify the bit rate in bits per second." );
+	mBitRateInterface.SetMax( 6000000 );
+	mBitRateInterface.SetMin( 1 );
+	mBitRateInterface.SetInteger( mBitRate );
 
-	AddInterface( mInputChannelInterface.get() );
-	AddInterface( mBitRateInterface.get() );
+	AddInterface( &mInputChannelInterface );
+	AddInterface( &mBitRateInterface );
 
 	AddExportOption( 0, "Export as text/csv file" );
 	AddExportExtension( 0, "text", "txt" );
@@ -33,8 +33,8 @@ SimpleSerialAnalyzerSettings::~SimpleSerialAnalyzerSettings()
 
 bool SimpleSerialAnalyzerSettings::SetSettingsFromInterfaces()
 {
-	mInputChannel = mInputChannelInterface->GetChannel();
-	mBitRate = mBitRateInterface->GetInteger();
+	mInputChannel = mInputChannelInterface.GetChannel();
+	mBitRate = mBitRateInterface.GetInteger();
 
 	ClearChannels();
 	AddChannel( mInputChannel, "Simple Serial", true );
@@ -44,8 +44,8 @@ bool SimpleSerialAnalyzerSettings::SetSettingsFromInterfaces()
 
 void SimpleSerialAnalyzerSettings::UpdateInterfacesFromSettings()
 {
-	mInputChannelInterface->SetChannel( mInputChannel );
-	mBitRateInterface->SetInteger( mBitRate );
+	mInputChannelInterface.SetChannel( mInputChannel );
+	mBitRateInterface.SetInteger( mBitRate );
 }
 
 void SimpleSerialAnalyzerSettings::LoadSettings( const char* settings )
