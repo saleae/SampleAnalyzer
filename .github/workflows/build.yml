@@ -12,20 +12,23 @@ jobs:
   windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Build
       run: |
         cmake -B ${{github.workspace}}/build -A x64
         cmake --build ${{github.workspace}}/build --config Release
     - name: Upload windows build
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: windows
         path: ${{github.workspace}}/build/Analyzers/Release/*.dll
   macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    - uses: actions/checkout@v4
     - name: Build
       run: |
         cmake -B ${{github.workspace}}/build/x86_64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
@@ -33,28 +36,28 @@ jobs:
         cmake -B ${{github.workspace}}/build/arm64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64
         cmake --build ${{github.workspace}}/build/arm64
     - name: Upload MacOS x86_64 build
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: macos_x86_64
         path: ${{github.workspace}}/build/x86_64/Analyzers/*.so
     - name: Upload MacOS arm64 build
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: macos_arm64
         path: ${{github.workspace}}/build/arm64/Analyzers/*.so
   linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Build
       run: |
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
         cmake --build ${{github.workspace}}/build
       env:
-        CC:   gcc-10
-        CXX:  g++-10
+        CC:   gcc-13
+        CXX:  g++-13
     - name: Upload Linux build
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: linux
         path: ${{github.workspace}}/build/Analyzers/*.so
@@ -63,19 +66,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: download individual builds
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         path: ${{github.workspace}}/artifacts
     - name: zip
       run: |
         cd ${{github.workspace}}/artifacts
         zip -r ${{github.workspace}}/analyzer.zip .
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: all-platforms
         path: ${{github.workspace}}/artifacts/**
     - name: create release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       if: startsWith(github.ref, 'refs/tags/')
       with:
           files: ${{github.workspace}}/analyzer.zip
