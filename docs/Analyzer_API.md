@@ -473,7 +473,7 @@ public:
 #### Frame Member Variables
 
 * ```mStartingSampleInclusive``` and ```mEndingSampleInclusive``` are the sample numbers for the beginning and end of the ```Frame```.  Frames may not overlap and they cannot share the same sample. For example, if a single clock edge ends one Frame, and starts a new Frame, then you’ll need to add one (+1) to the ```mStartingSampleInclusive``` of the second frame.  A single Frame cannot have ```mStartingSampleInclusive``` and ```mEndingSampleInclusive``` be equal. They must be at least 1 sample apart.
-* ```mData1``` and ```mData1``` Two 64-bit numbers to store Frame data data. For example, in SPI, one of these is used for the MISO result, and the other for the MISO result. Often times you’ll only use one of these variables.
+* ```mData1``` and ```mData2``` Two 64-bit numbers to store Frame data data. For example, in SPI, one of these is used for the MISO result, and the other for the MISO result. Often times you’ll only use one of these variables.
 * ```mType``` variable is intended to be used to save a custom-defined enum value, representing the type of ```Frame```. For example, CAN can have many different types of frames – header, data, CRC, etc. Serial only has one type, and it doesn’t use this member variable.
 * ```mFlags``` is intended to be a holder for custom flags which might apply to frame. Note that this is not intended for use with a custom enum, but rather for individual bits that can be or’ed together. For example, in Serial, there is a flag for framing-error, and a flag for parity error.
 ```c++
