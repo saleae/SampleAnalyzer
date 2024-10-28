@@ -497,9 +497,9 @@ Frame frame = GetFrame( frame_index );
 
 Bubbles can display different length strings, depending on how much room is available. You should generate several results strings. The simplest might simply indicate the type of contents (‘D’ for data, for example), longer ones might indicate the full number (“0xFF01”), and longer ones might be very verbose (“Left Channel Audio Data: 0xFF01”).
 
-To provide strings to the caller, use the ```AddStringResult``` function. This will make sure that the strings persist after the function has returned. Always call ```ClearResultStrings``` before adding any string results.
+To provide strings to the caller, use the ```AddResultString``` function. This will make sure that the strings persist after the function has returned. Always call ```ClearResultStrings``` before adding any string results.
 
-Note that to easily concatenate multiple strings, simply provide ```AddStringResult``` with more strings.
+Note that to easily concatenate multiple strings, simply provide ```AddResultString``` with more strings.
 
 ```c++
 void ClearResultStrings();
