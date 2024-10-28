@@ -25,15 +25,15 @@ void SimpleSerialAnalyzer::SetupResults()
 
 void SimpleSerialAnalyzer::WorkerThread()
 {
-	mSampleRateHz = GetSampleRate();
+	U32 sample_rate_hz = GetSampleRate();
 
 	mSerial = GetAnalyzerChannelData( mSettings.mInputChannel );
 
 	if( mSerial->GetBitState() == BIT_LOW )
 		mSerial->AdvanceToNextEdge();
 
-	U32 samples_per_bit = mSampleRateHz / mSettings.mBitRate;
-	U32 samples_to_first_center_of_first_data_bit = U32( 1.5 * double( mSampleRateHz ) / double( mSettings.mBitRate ) );
+	U32 samples_per_bit = sample_rate_hz / mSettings.mBitRate;
+	U32 samples_to_first_center_of_first_data_bit = U32( 1.5 * double( sample_rate_hz ) / double( mSettings.mBitRate ) );
 
 	for( ; ; )
 	{
