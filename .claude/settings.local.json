@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmake -B build -DCMAKE_BUILD_TYPE=Release)",
+      "Bash(cmake --build build --config Release)"
+    ]
+  }
+}
