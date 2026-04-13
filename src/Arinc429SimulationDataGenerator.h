@@ -16,11 +16,19 @@ public:
                                 SimulationChannelDescriptor** simulation_channels );
 
 protected:
+    // Emit one inter-word gap followed by one 32-bit ARINC 429 word.
+    void EmitWord( U32 word );
+
     Arinc429AnalyzerSettings* mSettings;
     U32 mSimulationSampleRateHz;
 
     // Contiguous array so the SDK can index them as mChannels[0], mChannels[1].
     SimulationChannelDescriptor mChannels[ 2 ];
+
+    // Rotating table of pre-built test words (valid + one parity-error word).
+    static const int kNumWords = 6;
+    U32 mWords[ kNumWords ];
+    int mWordIndex;
 };
 
 #endif // ARINC429_SIMULATION_DATA_GENERATOR_H

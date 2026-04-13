@@ -1,6 +1,62 @@
-# Saleae Analyzer SDK Sample Analyzer
+# ARINC 429 Analyzer for Saleae Logic 2
 
-- [Saleae Analyzer SDK Sample Analyzer](#saleae-analyzer-sdk-sample-analyzer)
+A Low Level Analyzer plugin that decodes ARINC 429 words from a differential pair and displays the raw 32-bit value on the waveform.
+
+## Using the Analyzer
+
+### Settings
+
+| Setting | Description |
+|---------|-------------|
+| **Channel A** | The positive leg of the ARINC 429 differential pair (logic-level, not raw ±10 V bus) |
+| **Channel B** | The negative leg of the ARINC 429 differential pair |
+| **Bit Rate** | `12500` for low-speed ARINC 429, `100000` for high-speed |
+
+Channel A and Channel B must be different channels. The analyzer will refuse to start if they are the same.
+
+### Wiring to real hardware
+
+The ARINC 429 bus runs at ±10 V differential. Connect a line-receiver chip (e.g. Holt HI-8460/61) between the bus and the Saleae to bring the signal down to logic levels. Connect the receiver's digital A and B outputs to two Saleae input channels. Do **not** connect the raw ARINC 429 bus wires directly to the Saleae inputs.
+
+### Decoded results
+
+Each decoded word produces one frame on the waveform:
+
+| Frame field | Contents |
+|-------------|----------|
+| Bubble text | 32-bit word value in hex |
+| `mData1` | Raw 32-bit word (bit 0 = first received = ARINC bit 1) |
+| `mData2` | `1` = odd parity correct, `0` = parity error |
+| `mType` | `0` = valid word, `1` = parity error |
+
+Parity-error frames are shown with a red error bubble.
+
+### Testing without hardware (simulation mode)
+
+1. Build the plugin (see [Building your Analyzer](#building-your-analyzer) below).
+2. Load it into Logic 2 (see [loading custom analyzers](https://support.saleae.com/faq/technical-faq/setting-up-developer-directory)).
+3. Open Logic 2 with no device connected and click **Start Simulation**.
+4. Add the **ARINC 429** analyzer, pick any two channels, set the bit rate.
+
+The built-in simulation generates a repeating sequence of six words:
+
+| # | Label (octal) | SDI | SSM | Note |
+|---|--------------|-----|-----|------|
+| 0 | 0101 | 00 | 00 | valid |
+| 1 | 0201 | 01 | 01 | valid |
+| 2 | 0270 | 10 | 00 | valid |
+| 3 | 0351 | 11 | 11 | valid — all data bits set |
+| 4 | 0004 | 00 | 00 | valid |
+| 5 | 0101 | 00 | 00 | **parity error** — exercises the error path |
+
+### CSV export
+
+Use the built-in **Export** button in Logic 2. The CSV contains one row per decoded word with columns: `Time [s]`, `Value`, `ParityOK`.
+
+---
+
+- [ARINC 429 Analyzer for Saleae Logic 2](#arinc-429-analyzer-for-saleae-logic-2)
+  - [Using the Analyzer](#using-the-analyzer)
   - [Renaming your Analyzer](#renaming-your-analyzer)
   - [Cloud Building & Publishing](#cloud-building--publishing)
     - [Apple Silicon Support](#apple-silicon-support)
@@ -16,7 +72,7 @@
     - [Windows](#windows-2)
     - [MacOS](#macos-2)
     - [Linux](#linux-2)
-  - [Updating an Existing Analyzer to use CMake & GitHub Actions](#updating-an-existing-analyzer-to-use-cmake---github-actions)
+  - [Updating an Existing Analyzer to use CMake & GitHub Actions](#updating-an-existing-analyzer-to-use-cmake--github-actions)
 
 The Saleae Analyzer SDK is used to create Low Level Analyzers (LLA) for the Saleae Logic software via a plugin architecture. These plugins are used to decode protocol data from captured waveforms. In many cases you can use a [High Level Analyzer Extension](https://support.saleae.com/extensions/high-level-analyzer-quickstart) to process data from an existing protocol decoder instead of building a LLA.
 

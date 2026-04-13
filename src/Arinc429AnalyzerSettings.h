@@ -20,9 +20,9 @@ public:
     U32 mBitRate;
 
 protected:
-    AnalyzerSettingInterfaceChannel mChannelAInterface;
-    AnalyzerSettingInterfaceChannel mChannelBInterface;
-    AnalyzerSettingInterfaceInteger mBitRateInterface;
+    AnalyzerSettingInterfaceChannel    mChannelAInterface;
+    AnalyzerSettingInterfaceChannel    mChannelBInterface;
+    AnalyzerSettingInterfaceNumberList mBitRateInterface;
 };
 
 #endif // ARINC429_ANALYZER_SETTINGS_H

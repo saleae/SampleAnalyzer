@@ -12,10 +12,10 @@ Arinc429AnalyzerSettings::Arinc429AnalyzerSettings()
     mChannelBInterface.SetTitleAndTooltip( "Channel B", "ARINC 429 differential line B (negative)" );
     mChannelBInterface.SetChannel( mChannelB );
 
-    mBitRateInterface.SetTitleAndTooltip( "Bit Rate (Bits/s)", "Enter 12500 (low speed) or 100000 (high speed)" );
-    mBitRateInterface.SetMax( 100000 );
-    mBitRateInterface.SetMin( 1 );
-    mBitRateInterface.SetInteger( mBitRate );
+    mBitRateInterface.SetTitleAndTooltip( "Bit Rate", "Select the ARINC 429 bus speed" );
+    mBitRateInterface.AddNumber( 100000, "High Speed (100 kbps)", "ARINC 429 high-speed bus: 100,000 bits/s" );
+    mBitRateInterface.AddNumber( 12500,  "Low Speed (12.5 kbps)", "ARINC 429 low-speed bus: 12,500 bits/s" );
+    mBitRateInterface.SetNumber( mBitRate );
 
     AddInterface( &mChannelAInterface );
     AddInterface( &mChannelBInterface );
@@ -47,7 +47,7 @@ bool Arinc429AnalyzerSettings::SetSettingsFromInterfaces()
 
     mChannelA = a;
     mChannelB = b;
-    mBitRate = mBitRateInterface.GetInteger();
+    mBitRate = static_cast<U32>( mBitRateInterface.GetNumber() );
 
     ClearChannels();
     AddChannel( mChannelA, "ARINC 429 A", true );
@@ -60,7 +60,7 @@ void Arinc429AnalyzerSettings::UpdateInterfacesFromSettings()
 {
     mChannelAInterface.SetChannel( mChannelA );
     mChannelBInterface.SetChannel( mChannelB );
-    mBitRateInterface.SetInteger( mBitRate );
+    mBitRateInterface.SetNumber( mBitRate );
 }
 
 void Arinc429AnalyzerSettings::LoadSettings( const char* settings )
