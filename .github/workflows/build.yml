@@ -50,9 +50,6 @@ jobs:
       run: |
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
         cmake --build ${{github.workspace}}/build
-      env:
-        CC:   gcc-10
-        CXX:  g++-10
     - name: Upload Linux build
       uses: actions/upload-artifact@v4
       with:
