@@ -3,7 +3,7 @@
 - [Saleae Analyzer SDK Sample Analyzer](#saleae-analyzer-sdk-sample-analyzer)
   - [Renaming your Analyzer](#renaming-your-analyzer)
   - [Cloud Building & Publishing](#cloud-building--publishing)
-    - [Apple Silicon Support](#apple-silicon-support)
+    - [ARM64 Support](#arm64-support)
   - [Prerequisites](#prerequisites)
     - [Windows](#windows)
     - [MacOS](#macos)
@@ -49,7 +49,7 @@ API documentation can be found in [docs/Analyzer_API.md](docs/Analyzer_API.md).
 
 This example repository includes support for GitHub actions, which is a continuous integration service from GitHub. The file located at `.github\workflows\build.yml` contains the configuration.
 
-When building in CI, the release version of the analyzer is built for Windows, Linux, and MacOS. The built analyzer files are available for every CI build. Additionally, GitHub releases are automatically created for any tagged commits, making it easy to share pre-built binaries with others once your analyzer is complete.
+When building in CI, the release version of the analyzer is built for Windows (x86_64 and ARM64), Linux (x86_64 and ARM64), and MacOS (x86_64 and ARM64). Linux builds use a pre-built Docker container for a reliable, reproducible build environment. The built analyzer files are available for every CI build. Additionally, GitHub releases are automatically created for any tagged commits, making it easy to share pre-built binaries with others once your analyzer is complete.
 
 Learn how to tag a commit here: https://stackoverflow.com/questions/18216991/create-a-tag-in-a-github-repository
 
@@ -88,21 +88,19 @@ xattr -r -d com.apple.quarantine libSimpleSerialAnalyzer.so
 
 To verify the flag was removed, run the first command again and verify the quarantine flag is no longer present.
 
-### Apple Silicon Support
+### ARM64 Support
 
-Logic 2 now supports Apple Silicon natively!
+Logic 2 supports ARM64 natively on macOS, Windows, and Linux.
 
-The included Github Actions integration, documented [here](#cloud-building---publishing), will automatically build your analyzer for both x86_64 and arm64 architectures, for MacOS.
+The included GitHub Actions integration, documented [here](#cloud-building---publishing), will automatically build your analyzer for both x86_64 and ARM64 architectures across all three platforms.
 
-When you build your custom analyzer on a Mac, by default it will compile for the architecture of the system.
+When building locally, CMake defaults to your host architecture on all platforms.
 
-Unfortunately, universal binaries are not currently supported.
+Unfortunately, universal binaries are not currently supported on macOS.
 
-You can optionally cross build your analyzer using an x86_64 host system targeting arm64, or from a arm64 host system targeting x86_64.
+#### Cross-Compilation
 
-To cross build, you will need to create a new build directory (for example `build/x86_64` or `build/arm64`). Then use the CMake variable [CMAKE_OSX_ARCHITECTURES](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_ARCHITECTURES.html).
-
-Examples:
+On macOS, you can cross-compile by creating a separate build directory and using the [CMAKE_OSX_ARCHITECTURES](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_ARCHITECTURES.html) variable:
 
 ```bash
 mkdir -p build/arm64
@@ -118,6 +116,8 @@ cmake --build .
 cd ../..
 # built analyzer will be located at SampleAnalyzer/build/x86_64/Analyzers/libSimpleSerialAnalyzer.so
 ```
+
+On Windows, you can target ARM64 by passing `-A ARM64` to CMake instead of `-A x64`.
 
 ## Prerequisites
 
@@ -181,7 +181,7 @@ _Note: Errors may occur if older versions of CMake are installed._
 Dependencies:
 
 - CMake 3.13+
-- gcc 5+
+- gcc
 - git
 
 Misc dependencies:
@@ -189,6 +189,8 @@ Misc dependencies:
 ```
 sudo apt-get install build-essential
 ```
+
+Note: CI builds use a pre-built Docker container (`ghcr.io/saleae/analyzer-build-image`) for a consistent build environment. You don't need Docker installed for local development.
 
 ## Building your Analyzer
 
@@ -223,6 +225,14 @@ cd build
 cmake ..
 cmake --build .
 # built analyzer will be located at SampleAnalyzer/build/Analyzers/libSimpleSerialAnalyzer.so
+```
+
+You can also build inside the same Docker container used by CI for a consistent environment:
+
+```bash
+docker pull ghcr.io/saleae/analyzer-build-image:linux-x86_64
+docker run --rm -v $(pwd):/app -w /app ghcr.io/saleae/analyzer-build-image:linux-x86_64 \
+  bash -c 'cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build'
 ```
 
 ## Debugging
