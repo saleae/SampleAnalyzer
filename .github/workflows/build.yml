@@ -2,14 +2,14 @@ name: Build
 
 on:
   push:
-    branches: [master]
+    branches: [master, main]
     tags:
       - '*'
   pull_request:
-    branches: [master]
+    branches: [master, main]
 
 jobs:
-  windows:
+  windows-x86_64:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
@@ -17,10 +17,23 @@ jobs:
       run: |
         cmake -B ${{github.workspace}}/build -A x64
         cmake --build ${{github.workspace}}/build --config Release
-    - name: Upload windows build
+    - name: Upload windows x86_64 build
       uses: actions/upload-artifact@v4
       with:
-        name: windows
+        name: windows_x86_64
+        path: ${{github.workspace}}/build/Analyzers/Release/*.dll
+  windows-arm64:
+    runs-on: windows-11-arm
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: |
+        cmake -B ${{github.workspace}}/build -A ARM64
+        cmake --build ${{github.workspace}}/build --config Release
+    - name: Upload windows arm64 build
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows_arm64
         path: ${{github.workspace}}/build/Analyzers/Release/*.dll
   macos:
     runs-on: macos-latest
@@ -42,21 +55,41 @@ jobs:
       with:
         name: macos_arm64
         path: ${{github.workspace}}/build/arm64/Analyzers/*.so
-  linux:
+  linux-x86_64:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build
+    - name: Pull pre-built builder image
+      run: docker pull ghcr.io/saleae/analyzer-build-image:linux-x86_64
+    - name: Build inside container
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/app \
+          -w /app \
+          ghcr.io/saleae/analyzer-build-image:linux-x86_64 \
+          bash -c 'cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build'
+    - name: Upload Linux x86_64 build
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux_x86_64
+        path: ${{github.workspace}}/build/Analyzers/*.so
+  linux-arm64:
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - uses: actions/checkout@v4
+    - name: Pull pre-built builder image
+      run: docker pull ghcr.io/saleae/analyzer-build-image:linux-arm64
+    - name: Build inside container
       run: |
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
         cmake --build ${{github.workspace}}/build
     - name: Upload Linux build
       uses: actions/upload-artifact@v4
       with:
-        name: linux
+        name: linux_arm64
         path: ${{github.workspace}}/build/Analyzers/*.so
   publish:
-    needs: [windows, macos, linux]
+    needs: [windows-x86_64, windows-arm64, macos, linux-x86_64, linux-arm64]
     runs-on: ubuntu-latest
     steps:
     - name: download individual builds

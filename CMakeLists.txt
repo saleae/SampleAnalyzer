@@ -4,6 +4,8 @@ project(Arinc429Analyzer)
 
 add_definitions( -DLOGIC2 )
 
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING "Minimum supported MacOS version" FORCE)
+
 # enable generation of compile_commands.json, helpful for IDEs to locate include files.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
