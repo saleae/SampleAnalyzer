@@ -21,6 +21,8 @@ src/Arinc429AnalyzerSettings.cpp
 src/Arinc429AnalyzerSettings.h
 src/Arinc429SimulationDataGenerator.cpp
 src/Arinc429SimulationDataGenerator.h
+src/Tb270ArincUtils.cpp
+src/Tb270ArincUtils.h
 )
 
 add_analyzer_plugin(${PROJECT_NAME} SOURCES ${SOURCES})

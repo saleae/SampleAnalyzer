@@ -1,6 +1,6 @@
 # ARINC 429 Analyzer for Saleae Logic 2
 
-A Low Level Analyzer plugin that decodes ARINC 429 words from a differential pair and displays the raw 32-bit value on the waveform.
+A Low Level Analyzer plugin that decodes ARINC 429 words from a differential pair and displays the raw 32-bit word and raw field breakdown on the waveform.
 
 ## Using the Analyzer
 
@@ -20,16 +20,18 @@ The ARINC 429 bus runs at ±10 V differential. Connect a line-receiver chip (e.g
 
 ### Decoded results
 
-Each decoded word produces one frame on the waveform:
+Each decoded word produces one frame on the waveform and one FrameV2 record for the Logic 2 data table:
 
 | Frame field | Contents |
 |-------------|----------|
-| Bubble text | 32-bit word value in hex |
+| Bubble text | Raw 32-bit word plus `Label (oct) | SDI | Data (raw) | Value | SSM | Parity` |
+| Data table | Built-in time/duration columns plus raw fields and one sparse TB270 engineering column per supported label |
 | `mData1` | Raw 32-bit word (bit 0 = first received = ARINC bit 1) |
 | `mData2` | `1` = odd parity correct, `0` = parity error |
 | `mType` | `0` = valid word, `1` = parity error |
 
 Parity-error frames are shown with a red error bubble.
+FrameV2 support requires Logic 2.3.43 or newer.
 
 ### Testing without hardware (simulation mode)
 
@@ -51,7 +53,7 @@ The built-in simulation generates a repeating sequence of six words:
 
 ### CSV export
 
-Use the built-in **Export** button in Logic 2. The CSV contains one row per decoded word with columns: `Time [s]`, `Value`, `ParityOK`.
+Use the built-in **Export** button in Logic 2. The CSV contains one row per decoded word with columns: `Time [s]`, `Delta [s]`, `Label (oct)`, `SDI`, `Data (raw)`, `Value`, `SSM`, `Parity`.
 
 ---
 
